@@ -1,0 +1,14 @@
+{
+  "name": "soporte-widget",
+  "version": "4.0.0",
+  "description": "Widget de chat embebible con SignalR",
+  "main": "dist/soporte-widget.min.js",
+  "scripts": {
+    "build": "rollup -c",
+    "build:dev": "rollup -c --environment BUILD:development"
+  },
+  "devDependencies": {
+    "rollup": "^2.79.2",
+    "@rollup/plugin-terser": "^0.4.4"
+  }
+}
