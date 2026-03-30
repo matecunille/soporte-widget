@@ -38,9 +38,8 @@ export class UI {
             setWidgetCredentials(config.credentials.userName, config.credentials.password);
         }
 
-        if (config.senderName && this.senderIdentifier) {
+        if (this.senderIdentifier) 
             this._userSet = true;
-        }
         
         this._reconnectAttempts = 0;
         this._maxReconnectAttempts = 5;
@@ -624,19 +623,17 @@ export class UI {
         this._listeners[event].push(callback);
     }
 
-    setCredentials(userName, password, senderName, senderIdentifier) {
-        if (!userName || !password || !senderName || !senderIdentifier) return;
+    setCredentials(userName, password, senderIdentifier) {
+        if (!userName || !password || !senderIdentifier) return;
         setWidgetCredentials(userName, password);
-        this.cfg.senderName = senderName;
         this.senderIdentifier = senderIdentifier;
         this._userSet = true;
         this.host.style.display = "";
-        this._emit("credentialsSet", { senderName, senderIdentifier });
+        this._emit("credentialsSet", { senderIdentifier });
     }
 
     setUser(userName, empresa) {
         if (!userName || !empresa) return;
-        this.cfg.senderName = userName;
         this.senderIdentifier = userName;
         this._senderCompany = empresa;
         this._userSet = true;

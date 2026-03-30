@@ -35,8 +35,8 @@ function initWidget() {
         destroy: () => widget.destroy(),
         on: (event, callback) => widget.on(event, callback),
         setUser: (userName, empresa) => widget.setUser(userName, empresa),
-        setCredentials: (userName, password, senderName, senderIdentifier) =>
-            widget.setCredentials(userName, password, senderName, senderIdentifier)
+        setCredentials: (userName, password, senderIdentifier) =>
+            widget.setCredentials(userName, password, senderIdentifier)
     };
 }
 
