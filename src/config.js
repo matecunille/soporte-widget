@@ -5,7 +5,6 @@ export const defaultConfig = {
     subtitle: "Chat con nuestro equipo",
     primaryColor: "#FE7109",
     position: "right",
-    senderName: "",
     senderIdentifier: "",
     credentials: null,       // { userName, password } — set by host page for auto-init
     senderCompany: "",       

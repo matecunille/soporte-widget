@@ -360,7 +360,7 @@ export class UI {
         this.api.sendMessage(
             text,
             this.senderIdentifier,
-            this.cfg.senderName,
+            this.cfg.productName,
             this.conversationId,
             pending.map(p => p.file),
             this._senderCompany,

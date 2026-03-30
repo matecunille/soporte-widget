@@ -16,19 +16,19 @@ export class ApiClient {
         return fetch(url, { ...options, headers });
     }
 
-    sendMessage(content, senderIdentifier, senderName, conversationId, files, senderCompany, pageUrl) {
+    sendMessage(content, senderIdentifier, productName,conversationId, files, senderCompany, pageUrl) {
         const formData = new FormData();
         formData.append("Content", content || "");
         formData.append("SenderIdentifier", senderIdentifier);
-        formData.append("SenderName", senderName);
-        formData.append("ClientIdentifier", this._clientId);
-        if (conversationId) formData.append("ConversationId", conversationId);
+        formData.append("ProductName", productName);
+        formData.append("ConversationId", conversationId);
+        formData.append("SenderCompany", senderCompany);
+        formData.append("PageUrl", pageUrl);
+
         if (files) {
             const fileList = Array.isArray(files) ? files : [files];
             fileList.forEach(f => formData.append("files", f));
         }
-        if (senderCompany) formData.append("SenderCompany", senderCompany);
-        if (pageUrl) formData.append("PageUrl", pageUrl);
 
         return this._request(this._base + "/api/webhooks/widget", {
             method: "POST",
