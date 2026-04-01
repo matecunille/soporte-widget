@@ -1,7 +1,62 @@
 import { ApiClient } from "./api-client.js";
 import { SignalRManager } from "./signalr-manager.js";
 import { generateStyles, closeIconSvg } from "./styles.js";
-import { escapeHtml, formatTime, storageGet, storageSet, storageRemove, playNotificationSound, setWidgetCredentials, STORAGE_CONVERSATION_ID, STORAGE_CONVERSATION_TIMESTAMP } from "./utils.js";
+import { escapeHtml, formatTime, playNotificationSound, setWidgetCredentials } from "./utils.js";
+
+function normalizeHistoryMessage(message, resolveUrl) {
+    let content = message.content || message.Content || "";
+    if (typeof content === "object" && content !== null) {
+        content = content.content || content.Content || JSON.stringify(content);
+    }
+
+    const rawAttachments = Array.isArray(message.attachments)
+        ? message.attachments
+        : Array.isArray(message.Attachments)
+            ? message.Attachments
+            : [];
+    const attachments = rawAttachments.map((attachment) => ({
+        imageUrl: resolveUrl(attachment.sasUrl || attachment.imageUrl || attachment.url),
+        fileName: attachment.fileName,
+        contentType: attachment.contentType
+    }));
+
+    return {
+        content: String(content),
+        sentAt: message.sentAt || message.SentAt,
+        isFromLead: message.isFromLead !== undefined ? message.isFromLead : message.IsFromLead,
+        attachments
+    };
+}
+
+export function normalizeHistoryPayload(payload, resolveUrl) {
+    const history = payload ?? [];
+    const conversation = Array.isArray(history)
+        ? null
+        : history.conversation || history.Conversation || history;
+    const rawMessages = Array.isArray(history)
+        ? history
+        : [
+            conversation?.messages,
+            conversation?.Messages,
+            history.messages,
+            history.Messages
+        ].find(Array.isArray) || [];
+    const rawConversationId =
+        conversation?.conversationId ??
+        conversation?.ConversationId ??
+        conversation?.id ??
+        conversation?.Id ??
+        history.conversationId ??
+        history.ConversationId ??
+        history.id ??
+        history.Id ??
+        null;
+
+    return {
+        conversationId: rawConversationId == null || rawConversationId === "" ? null : String(rawConversationId),
+        messages: rawMessages.map((message) => normalizeHistoryMessage(message, resolveUrl))
+    };
+}
 
 export class UI {
     constructor(config) {
@@ -11,18 +66,7 @@ export class UI {
         this.messages = [];
         this.isOpen = false;
         this.unread = 0;
-        this.conversationId = (() => {
-            const id = storageGet(STORAGE_CONVERSATION_ID);
-            const ts = storageGet(STORAGE_CONVERSATION_TIMESTAMP);
-            if (id && ts) {
-                if (Date.now() - parseInt(ts, 10) < 604800000) { // 7 días
-                    return id;
-                }
-                storageRemove(STORAGE_CONVERSATION_ID);
-                storageRemove(STORAGE_CONVERSATION_TIMESTAMP);
-            }
-            return null;
-        })() || null;
+        this.conversationId = null;
         this.senderIdentifier = config.senderIdentifier || "";
         this._senderCompany = config.senderCompany || "";
         this._connected = false;
@@ -291,25 +335,13 @@ export class UI {
             }
         );
 
-        const historyPromise = this.conversationId
-            ? this.api.loadHistory(this.conversationId).then(msgs => {
-                this.messages = (msgs || []).map(m => {
-                    let content = m.content || m.Content || "";
-                    if (typeof content === "object" && content !== null) {
-                        content = content.content || content.Content || JSON.stringify(content);
-                    }
-                    const attachments = (m.attachments || []).map(a => ({
-                        imageUrl: this._resolveUrl(a.sasUrl || a.imageUrl || a.url),
-                        fileName: a.fileName,
-                        contentType: a.contentType
-                    }));
-                    return {
-                        content: String(content),
-                        sentAt: m.sentAt || m.SentAt,
-                        isFromLead: m.isFromLead !== undefined ? m.isFromLead : m.IsFromLead,
-                        attachments: attachments
-                    };
-                });
+        const historyPromise = this.senderIdentifier
+            ? this.api.loadHistory(this.senderIdentifier).then(history => {
+                const normalized = normalizeHistoryPayload(history, (url) => this._resolveUrl(url));
+                if (normalized.conversationId) {
+                    this.conversationId = normalized.conversationId;
+                }
+                this.messages = normalized.messages;
                 this._renderMessages();
                 this._scrollToBottom(true);
             }).catch(() => {})
@@ -327,16 +359,16 @@ export class UI {
     }
 
     _sendMessage() {
-        if (!this._userSet) return;
+        if (!this._userSet) return Promise.resolve();
 
         const text = this.elInput.value.trim();
         const pending = [...this._pendingImages];
-        if (!text && pending.length === 0) return;
-        if (this._sending) return;
+        if (!text && pending.length === 0) return Promise.resolve();
+        if (this._sending) return Promise.resolve();
 
         if (!this.signalr || this._status !== "connected") {
             console.warn("No conectado, no se envía el mensaje");
-            return;
+            return Promise.resolve();
         }
 
         this._sending = true;
@@ -356,7 +388,7 @@ export class UI {
         this._renderMessages();
         this._scrollToBottom(true);
 
-        this.api.sendMessage(
+        return this.api.sendMessage(
             text,
             this.senderIdentifier,
             this.cfg.productName,
@@ -369,8 +401,6 @@ export class UI {
             const newConvId = res.conversationId;
             if (newConvId && this.conversationId !== String(newConvId)) {
                 this.conversationId = String(newConvId);
-                storageSet(STORAGE_CONVERSATION_ID, this.conversationId);
-                storageSet(STORAGE_CONVERSATION_TIMESTAMP, Date.now().toString());
                 if (this.signalr) this.signalr.joinConversation(this.conversationId);
             }
             if (res.attachments && res.attachments.length > 0) {

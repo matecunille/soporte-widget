@@ -4,18 +4,6 @@ export function escapeHtml(text) {
     return span.innerHTML;
 }
 
-export function storageGet(key) {
-    try { return localStorage.getItem(key); } catch { return null; }
-}
-
-export function storageSet(key, value) {
-    try { localStorage.setItem(key, value); } catch {}
-}
-
-export function storageRemove(key) {
-    try { localStorage.removeItem(key); } catch {}
-}
-
 export function formatTime(isoString) {
     const date = new Date(isoString);
     const hours = date.getHours();
@@ -32,7 +20,6 @@ export function hexToRgb(hex) {
     return `${(num>>16)&255},${(num>>8)&255},${num&255}`;
 }
 
-// ✅ FIX 5: AudioContext singleton
 let audioCtx = null;
 
 export function playNotificationSound() {
@@ -61,9 +48,6 @@ export function playNotificationSound() {
         console.warn("Audio error", e);
     }
 }
-
-export const STORAGE_CONVERSATION_ID = "soporte_widget_conversationId";
-export const STORAGE_CONVERSATION_TIMESTAMP = "soporte_widget_conversation_timestamp";
 
 let authState = { token: null, expiresAt: 0, userName: null, password: null };
 

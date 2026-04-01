@@ -39,8 +39,13 @@ export class ApiClient {
         });
     }
 
-    loadHistory(conversationId) {
-        return this._request(this._base + "/api/widget/conversations/" + conversationId + "/messages")
+    loadHistory(senderIdentifier) {
+        const historyUrl = new URL(this._base + "/api/widget/conversations/history");
+        if (senderIdentifier) {
+            historyUrl.searchParams.set("senderIdentifier", senderIdentifier);
+        }
+
+        return this._request(historyUrl.toString())
             .then(res => {
                 if (!res.ok) throw new Error(`GET history failed: ${res.status}`);
                 return res.json();

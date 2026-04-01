@@ -4,6 +4,7 @@
   "description": "Widget de chat embebible con SignalR",
   "main": "dist/soporte-widget.min.js",
   "scripts": {
+    "test": "node --experimental-default-type=module --test tests/history-flow.test.js",
     "build": "rollup -c",
     "build:dev": "rollup -c --environment BUILD:development"
   },
