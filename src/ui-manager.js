@@ -3,6 +3,66 @@ import { SignalRManager } from "./signalr-manager.js";
 import { generateStyles, closeIconSvg } from "./styles.js";
 import { escapeHtml, formatTime, playNotificationSound, setWidgetCredentials } from "./utils.js";
 
+const IMAGE_CONTENT_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp"
+]);
+
+const FILE_KIND_IMAGE = "image";
+const FILE_KIND_PDF = "pdf";
+const FILE_KIND_GENERIC = "file";
+
+function inferAttachmentContentType(attachment) {
+    const explicitType = typeof attachment.contentType === "string"
+        ? attachment.contentType.trim().toLowerCase()
+        : "";
+
+    if (explicitType) {
+        return explicitType;
+    }
+
+    const source = (
+        attachment.fileName ||
+        attachment.url ||
+        attachment.imageUrl ||
+        attachment.sasUrl ||
+        ""
+    ).toLowerCase().split("?")[0].split("#")[0];
+
+    if (source.endsWith(".pdf")) return "application/pdf";
+    if (source.endsWith(".png")) return "image/png";
+    if (source.endsWith(".gif")) return "image/gif";
+    if (source.endsWith(".webp")) return "image/webp";
+    if (source.endsWith(".jpg") || source.endsWith(".jpeg")) return "image/jpeg";
+
+    return "";
+}
+
+function getAttachmentKind(attachment) {
+    const contentType = inferAttachmentContentType(attachment);
+
+    if (IMAGE_CONTENT_TYPES.has(contentType)) return FILE_KIND_IMAGE;
+    if (contentType === "application/pdf") return FILE_KIND_PDF;
+
+    return FILE_KIND_GENERIC;
+}
+
+export function normalizeAttachment(attachment, resolveUrl) {
+    const url = resolveUrl(attachment.sasUrl || attachment.imageUrl || attachment.url || attachment.localUrl);
+    const contentType = inferAttachmentContentType(attachment);
+    const fileName = attachment.fileName || attachment.name || "Archivo";
+
+    return {
+        url,
+        imageUrl: url,
+        fileName,
+        contentType,
+        kind: getAttachmentKind({ ...attachment, contentType, fileName, url })
+    };
+}
+
 function normalizeHistoryMessage(message, resolveUrl) {
     let content = message.content || message.Content || "";
     if (typeof content === "object" && content !== null) {
@@ -14,11 +74,7 @@ function normalizeHistoryMessage(message, resolveUrl) {
         : Array.isArray(message.Attachments)
             ? message.Attachments
             : [];
-    const attachments = rawAttachments.map((attachment) => ({
-        imageUrl: resolveUrl(attachment.sasUrl || attachment.imageUrl || attachment.url),
-        fileName: attachment.fileName,
-        contentType: attachment.contentType
-    }));
+    const attachments = rawAttachments.map((attachment) => normalizeAttachment(attachment, resolveUrl));
 
     return {
         content: String(content),
@@ -73,7 +129,7 @@ export class UI {
         this._status = "disconnected";
         this._listeners = {};
         this._sending = false;
-        this._pendingImages = [];
+        this._pendingAttachments = [];
         this._userSet = false;
         this._connectionError = false;
 
@@ -133,13 +189,13 @@ export class UI {
             </div>
             <div class="sw-status hidden"></div>
             <div class="sw-body"><div class="sw-messages"></div></div>
-            <div class="sw-img-preview" style="display:none;"></div>
+            <div class="sw-attachment-preview" style="display:none;"></div>
             <div class="sw-footer">
-                <button class="sw-attach-btn" aria-label="Adjuntar imagen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+                <button class="sw-attach-btn" aria-label="Adjuntar archivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
                 <input class="sw-input" type="text" placeholder="Escribe un mensaje…" aria-label="Mensaje" />
                 <button class="sw-send-btn" aria-label="Enviar" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
             </div>
-            <input class="sw-file-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple style="display:none;" />
+            <input class="sw-file-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" multiple style="display:none;" />
             <div class="sw-powered">Powered by <a href="#">Advertys</a></div>
         `;
         this.shadow.appendChild(this.popup);
@@ -152,7 +208,7 @@ export class UI {
         this.elFooter = this.popup.querySelector(".sw-footer");
         this.elAttachBtn = this.popup.querySelector(".sw-attach-btn");
         this.elFileInput = this.popup.querySelector(".sw-file-input");
-        this.elImgPreview = this.popup.querySelector(".sw-img-preview");
+        this.elAttachmentPreview = this.popup.querySelector(".sw-attachment-preview");
 
         // Event listeners
         this.popup.querySelector(".sw-btn-close").addEventListener("click", () => this.close());
@@ -209,61 +265,84 @@ export class UI {
     }
 
     _updateSendButton() {
-        this.elSendBtn.disabled = !this.elInput.value.trim() && this._pendingImages.length === 0;
+        this.elSendBtn.disabled = !this.elInput.value.trim() && this._pendingAttachments.length === 0;
     }
 
     _handleFileSelect(file) {
-        const allowed = { "image/jpeg": 1, "image/png": 1, "image/gif": 1, "image/webp": 1 };
+        const allowed = {
+            "image/jpeg": 1,
+            "image/png": 1,
+            "image/gif": 1,
+            "image/webp": 1,
+            "application/pdf": 1
+        };
         if (!allowed[file.type]) return;
         if (file.size > 5 * 1024 * 1024) return; // 5MB
 
-        this._pendingImages.push({
+        this._pendingAttachments.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2),
-            file: file,
+            file,
+            fileName: file.name,
+            contentType: file.type,
+            kind: getAttachmentKind({ contentType: file.type, fileName: file.name }),
             localUrl: URL.createObjectURL(file)
         });
-        this._showImagePreview();
+        this._showAttachmentPreview();
         this._updateSendButton();
     }
 
-    _showImagePreview() {
-        if (this._pendingImages.length === 0) {
-            this.elImgPreview.style.display = "none";
-            this.elImgPreview.innerHTML = "";
+    _showAttachmentPreview() {
+        if (this._pendingAttachments.length === 0) {
+            this.elAttachmentPreview.style.display = "none";
+            this.elAttachmentPreview.innerHTML = "";
             return;
         }
-        this.elImgPreview.innerHTML = this._pendingImages.map(img => `
-            <div class="sw-img-preview-item" data-id="${img.id}">
-                <img class="sw-img-preview-thumb" src="${img.localUrl}" />
-                <button class="sw-img-preview-remove" aria-label="Quitar">×</button>
-            </div>
-        `).join("");
-        this.elImgPreview.style.display = "flex";
-        this.elImgPreview.querySelectorAll(".sw-img-preview-remove").forEach(btn => {
+        this.elAttachmentPreview.innerHTML = this._pendingAttachments.map((attachment) => {
+            const previewContent = attachment.kind === FILE_KIND_IMAGE
+                ? `<img class="sw-attachment-preview-thumb" src="${attachment.localUrl}" />`
+                : `
+                    <div class="sw-msg-file sw-msg-file-${attachment.kind}">
+                        <span class="sw-msg-file-icon">${attachment.kind === FILE_KIND_PDF ? "PDF" : "FILE"}</span>
+                        <div class="sw-msg-file-meta">
+                            <div class="sw-msg-file-name">${escapeHtml(attachment.fileName)}</div>
+                            <div class="sw-msg-file-action">${attachment.kind === FILE_KIND_PDF ? "PDF listo para enviar" : "Archivo listo para enviar"}</div>
+                        </div>
+                    </div>
+                `;
+
+            return `
+                <div class="sw-attachment-preview-item" data-id="${attachment.id}">
+                    ${previewContent}
+                    <button class="sw-attachment-preview-remove" aria-label="Quitar">×</button>
+                </div>
+            `;
+        }).join("");
+        this.elAttachmentPreview.style.display = "flex";
+        this.elAttachmentPreview.querySelectorAll(".sw-attachment-preview-remove").forEach(btn => {
             btn.addEventListener("click", () => {
-                const id = btn.closest(".sw-img-preview-item").dataset.id;
-                this._removePendingImage(id);
+                const id = btn.closest(".sw-attachment-preview-item").dataset.id;
+                this._removePendingAttachment(id);
             });
         });
     }
 
-    _clearPendingImages(revoke = true) {
+    _clearPendingAttachments(revoke = true) {
         if (revoke) {
-            this._pendingImages.forEach(img => URL.revokeObjectURL(img.localUrl));
+            this._pendingAttachments.forEach(attachment => URL.revokeObjectURL(attachment.localUrl));
         }
-        this._pendingImages = [];
-        this.elImgPreview.style.display = "none";
-        this.elImgPreview.innerHTML = "";
+        this._pendingAttachments = [];
+        this.elAttachmentPreview.style.display = "none";
+        this.elAttachmentPreview.innerHTML = "";
         this._updateSendButton();
     }
 
-    _removePendingImage(id) {
-        const idx = this._pendingImages.findIndex(img => img.id === id);
+    _removePendingAttachment(id) {
+        const idx = this._pendingAttachments.findIndex(attachment => attachment.id === id);
         if (idx !== -1) {
-            URL.revokeObjectURL(this._pendingImages[idx].localUrl);
-            this._pendingImages.splice(idx, 1);
+            URL.revokeObjectURL(this._pendingAttachments[idx].localUrl);
+            this._pendingAttachments.splice(idx, 1);
         }
-        this._showImagePreview();
+        this._showAttachmentPreview();
         this._updateSendButton();
     }
 
@@ -302,22 +381,22 @@ export class UI {
         this.signalr = new SignalRManager(
             this.cfg,
             (content, sentAt, attachments, isFromLead = false) => {
+                const normalizedAttachments = (attachments || [])
+                    .map((attachment) => normalizeAttachment(attachment, (url) => this._resolveUrl(url)));
+
                 // Avoid duplicates (e.g. optimistic message already rendered)
                 if (this.messages.some(m =>
                     m.content === content &&
                     Math.abs(new Date(m.sentAt) - new Date(sentAt)) < 2000 &&
                     m.isFromLead === isFromLead &&
-                    JSON.stringify(m.attachments) === JSON.stringify(attachments)
+                    JSON.stringify(m.attachments) === JSON.stringify(normalizedAttachments)
                 )) return;
 
                 const msg = {
                     content,
                     sentAt,
                     isFromLead,
-                    attachments: (attachments || []).map(a => ({
-                        imageUrl: this._resolveUrl(a.imageUrl),
-                        fileName: a.fileName
-                    }))
+                    attachments: normalizedAttachments
                 };
                 this.messages.push(msg);
                 if (!this.isOpen) {
@@ -362,7 +441,7 @@ export class UI {
         if (!this._userSet) return Promise.resolve();
 
         const text = this.elInput.value.trim();
-        const pending = [...this._pendingImages];
+        const pending = [...this._pendingAttachments];
         if (!text && pending.length === 0) return Promise.resolve();
         if (this._sending) return Promise.resolve();
 
@@ -381,7 +460,14 @@ export class UI {
             content: text,
             sentAt: new Date().toISOString(),
             isFromLead: true,
-            attachments: pending.map(p => ({ imageUrl: p.localUrl, fileName: p.file.name, temp: true })),
+            attachments: pending.map((attachment) => ({
+                ...normalizeAttachment({
+                    url: attachment.localUrl,
+                    fileName: attachment.file.name,
+                    contentType: attachment.file.type
+                }, (url) => url),
+                temp: true
+            })),
             _blobUrls: pending.map(p => p.localUrl)
         };
         this.messages.push(optimisticMsg);
@@ -393,7 +479,7 @@ export class UI {
             this.senderIdentifier,
             this.cfg.productName,
             this.conversationId,
-            pending.map(p => p.file),
+            pending.map(attachment => attachment.file),
             this._senderCompany,
             window.location.href
         )
@@ -411,7 +497,7 @@ export class UI {
             this._markMessageAsFailed(tempId);
         })
         .finally(() => {
-            this._clearPendingImages(false);
+            this._clearPendingAttachments(false);
             this._sending = false;
             this._updateSendButton();
         });
@@ -429,10 +515,11 @@ export class UI {
             content: oldMsg.content,
             sentAt: oldMsg.sentAt,
             isFromLead: true,
-            attachments: serverAttachments.map((a, i) => ({
-                imageUrl: this._resolveUrl(a.sasUrl || a.imageUrl || a.url),
-                fileName: a.fileName || oldMsg.attachments[i]?.fileName
-            }))
+            attachments: serverAttachments.map((attachment, i) => normalizeAttachment({
+                ...attachment,
+                fileName: attachment.fileName || oldMsg.attachments[i]?.fileName,
+                contentType: attachment.contentType || oldMsg.attachments[i]?.contentType
+            }, (url) => this._resolveUrl(url)))
         };
         this.messages = [
             ...this.messages.filter(m => m.id !== tempId),
@@ -466,13 +553,33 @@ export class UI {
             return;
         }
 
+        const renderAttachment = (attachment) => {
+            const attachmentUrl = attachment.url || attachment.imageUrl;
+            if (!attachmentUrl) return "";
+
+            if (attachment.kind === FILE_KIND_IMAGE) {
+                return `<img class="sw-msg-image" src="${escapeHtml(attachmentUrl)}" alt="${escapeHtml(attachment.fileName || "imagen")}" />`;
+            }
+
+            const fileLabel = attachment.kind === FILE_KIND_PDF ? "Descargar PDF" : "Descargar archivo";
+            const fileIcon = attachment.kind === FILE_KIND_PDF ? "PDF" : "FILE";
+
+            return `
+                <a class="sw-msg-file sw-msg-file-${attachment.kind}" href="${escapeHtml(attachmentUrl)}" download="${escapeHtml(attachment.fileName || "archivo")}" target="_blank" rel="noopener noreferrer">
+                    <span class="sw-msg-file-icon">${fileIcon}</span>
+                    <div class="sw-msg-file-meta">
+                        <div class="sw-msg-file-name">${escapeHtml(attachment.fileName || "Archivo")}</div>
+                        <div class="sw-msg-file-action">${fileLabel}</div>
+                    </div>
+                </a>
+            `;
+        };
+
         const renderMessageContent = (msg) => {
             let html = "";
             const attachments = msg.attachments || [];
-            for (let a of attachments) {
-                if (a.imageUrl) {
-                    html += `<img class="sw-msg-image" src="${escapeHtml(a.imageUrl)}" alt="${escapeHtml(a.fileName || "imagen")}" />`;
-                }
+            for (const attachment of attachments) {
+                html += renderAttachment(attachment);
             }
             if (msg.content) {
                 html += `<div class="sw-msg-text">${escapeHtml(msg.content)}</div>`;

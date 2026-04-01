@@ -266,27 +266,29 @@ export function generateStyles(config) {
     .sw-attach-btn:hover { color: ${primary}; background: rgba(${rgb},0.08); }
     .sw-attach-btn svg { width: 18px; height: 18px; }
 
-    .sw-img-preview {
+    .sw-attachment-preview {
       display: flex; align-items: center; gap: 10px;
       padding: 8px 12px; background: #f5f5f7; border-top: 1px solid #e5e5ea;
-      flex-shrink: 0;
+      flex-shrink: 0; flex-wrap: wrap;
     }
-    .sw-img-preview-thumb {
+    .sw-attachment-preview-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sw-attachment-preview-thumb {
       width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
       border: 1px solid #e5e5ea;
     }
-    .sw-img-preview-name {
-      flex: 1; min-width: 0; font-size: 12px; color: #636366;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .sw-img-preview-remove {
+    .sw-attachment-preview-remove {
       background: none; border: none; cursor: pointer;
       width: 24px; height: 24px; border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       color: #aeaeb2; font-size: 16px; line-height: 1;
       transition: color 0.15s, background 0.15s;
     }
-    .sw-img-preview-remove:hover { color: #ef4444; background: rgba(239,68,68,0.08); }
+    .sw-attachment-preview-remove:hover { color: #ef4444; background: rgba(239,68,68,0.08); }
 
     .sw-msg-image {
       max-width: 220px; border-radius: 10px; cursor: pointer;
@@ -294,6 +296,78 @@ export function generateStyles(config) {
       transition: opacity 0.15s;
     }
     .sw-msg-image:hover { opacity: 0.85; }
+
+    .sw-msg-file {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      background: #fff;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      color: #1d1d1f;
+      text-decoration: none;
+    }
+    .sw-msg-file:hover {
+      background: #f9fafb;
+      border-color: rgba(${rgb},0.24);
+    }
+    .sw-msg-out .sw-msg-file {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.28);
+      color: #fff;
+    }
+    .sw-msg-out .sw-msg-file:hover {
+      background: rgba(255,255,255,0.22);
+    }
+    .sw-msg-file-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      background: #eef2ff;
+      color: #1d4ed8;
+    }
+    .sw-msg-file-pdf .sw-msg-file-icon {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+    .sw-msg-out .sw-msg-file-icon {
+      background: rgba(255,255,255,0.24);
+      color: #fff;
+    }
+    .sw-msg-file-meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+    .sw-msg-file-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sw-msg-file-action {
+      font-size: 11px;
+      line-height: 1.3;
+      color: #6b7280;
+    }
+    .sw-msg-out .sw-msg-file-action {
+      color: rgba(255,255,255,0.82);
+    }
 
     .sw-lightbox {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;

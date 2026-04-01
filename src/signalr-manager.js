@@ -28,12 +28,20 @@ export class SignalRManager {
         this.connection.keepAliveIntervalInMilliseconds = 15000;
 
         this.connection.on("RecibirRespuesta", (content, sentAt, attachments) => {
-            const mapped = (attachments || []).map(a => ({ imageUrl: a.url, fileName: a.fileName }));
+            const mapped = (attachments || []).map(a => ({
+                imageUrl: a.url,
+                fileName: a.fileName,
+                contentType: a.contentType
+            }));
             this.onMessage(content, sentAt, mapped, false);
         });
 
         this.connection.on("RecibirMensajeWidget", (content, sentAt, attachments) => {
-            const mapped = (attachments || []).map(a => ({ imageUrl: a.url, fileName: a.fileName }));
+            const mapped = (attachments || []).map(a => ({
+                imageUrl: a.url,
+                fileName: a.fileName,
+                contentType: a.contentType
+            }));
             this.onMessage(content, sentAt, mapped, true);
         });
 
