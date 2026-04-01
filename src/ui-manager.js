@@ -246,6 +246,13 @@ export class UI {
         this.elSendBtn.addEventListener("click", () => this._sendMessage());
 
         this.elMessages.addEventListener("click", (e) => {
+            const fileLink = e.target.closest(".sw-msg-file");
+            if (fileLink) {
+                e.preventDefault();
+                this._downloadAttachment(fileLink.dataset.url, fileLink.dataset.fileName);
+                return;
+            }
+
             const img = e.target.closest(".sw-msg-image");
             if (img) this._openLightbox(img.src);
         });
@@ -352,6 +359,41 @@ export class UI {
         lightbox.innerHTML = `<img src="${src}" />`;
         lightbox.addEventListener("click", () => lightbox.remove());
         this.shadow.appendChild(lightbox);
+    }
+
+    async _downloadAttachment(url, fileName) {
+        if (!url) return;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Download failed: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.download = fileName || "archivo";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(() => {
+                URL.revokeObjectURL(objectUrl);
+            }, 1000);
+        } catch (error) {
+            console.warn("Attachment download fallback", error);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName || "archivo";
+            link.rel = "noopener noreferrer";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
     }
 
     _resolveUrl(url) {
@@ -565,7 +607,7 @@ export class UI {
             const fileIcon = attachment.kind === FILE_KIND_PDF ? "PDF" : "FILE";
 
             return `
-                <a class="sw-msg-file sw-msg-file-${attachment.kind}" href="${escapeHtml(attachmentUrl)}" download="${escapeHtml(attachment.fileName || "archivo")}" target="_blank" rel="noopener noreferrer">
+                <a class="sw-msg-file sw-msg-file-${attachment.kind}" href="${escapeHtml(attachmentUrl)}" download="${escapeHtml(attachment.fileName || "archivo")}" data-url="${escapeHtml(attachmentUrl)}" data-file-name="${escapeHtml(attachment.fileName || "archivo")}">
                     <span class="sw-msg-file-icon">${fileIcon}</span>
                     <div class="sw-msg-file-meta">
                         <div class="sw-msg-file-name">${escapeHtml(attachment.fileName || "Archivo")}</div>
