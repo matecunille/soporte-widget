@@ -159,7 +159,7 @@ export function generateStyles(config) {
 
     .sw-msg-in-group {
       display: flex; flex-direction: column; align-items: flex-start;
-      max-width: 82%; margin-top: 12px;
+      max-width: 90%; margin-top: 12px;
       animation: sw-msg-in 0.3s cubic-bezier(0.16,1,0.3,1) both;
     }
     .sw-msg-in-group .sw-msg-sender {
@@ -172,11 +172,19 @@ export function generateStyles(config) {
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
     .sw-msg-in + .sw-msg-in { border-radius: 4px 14px 14px 4px; margin-top: 2px; }
-    .sw-msg-in .sw-msg-text { font-size: 13.5px; line-height: 1.5; color: #1d1d1f; }
+    .sw-msg-in .sw-msg-text,
+    .sw-msg-out .sw-msg-text {
+      font-size: 13.5px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .sw-msg-in .sw-msg-text { color: #1d1d1f; }
 
     .sw-msg-out-group {
       display: flex; flex-direction: column; align-items: flex-end;
-      max-width: 82%; align-self: flex-end; margin-top: 12px;
+      max-width: 90%; align-self: flex-end; margin-top: 12px;
       animation: sw-msg-in 0.3s cubic-bezier(0.16,1,0.3,1) both;
     }
     .sw-msg-out {
@@ -185,7 +193,7 @@ export function generateStyles(config) {
       word-wrap: break-word; max-width: 100%;
     }
     .sw-msg-out + .sw-msg-out { border-radius: 14px 4px 4px 14px; margin-top: 2px; }
-    .sw-msg-out .sw-msg-text { font-size: 13.5px; line-height: 1.5; color: #fff; }
+    .sw-msg-out .sw-msg-text { color: #fff; }
 
     .sw-msg-time {
       font-size: 10px; color: #aeaeb2; margin-top: 4px; padding: 0 4px;
