@@ -10,9 +10,65 @@ const IMAGE_CONTENT_TYPES = new Set([
     "image/webp"
 ]);
 
+const ALLOWED_ATTACHMENT_CONTENT_TYPES = {
+    "image/jpeg": 1,
+    "image/png": 1,
+    "image/gif": 1,
+    "image/webp": 1,
+    "application/pdf": 1
+};
+
+const PASTED_IMAGE_EXTENSIONS = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp"
+};
+
 const FILE_KIND_IMAGE = "image";
 const FILE_KIND_PDF = "pdf";
 const FILE_KIND_GENERIC = "file";
+
+function createPastedImageName(contentType) {
+    const extension = PASTED_IMAGE_EXTENSIONS[contentType] || "png";
+    return `imagen-pegada-${Date.now()}.${extension}`;
+}
+
+function ensurePastedImageName(file) {
+    if (!file || file.name) return file;
+
+    const fileName = createPastedImageName(file.type);
+    if (typeof File === "function") {
+        return new File([file], fileName, {
+            type: file.type,
+            lastModified: file.lastModified || Date.now()
+        });
+    }
+
+    return file;
+}
+
+function extractPastedImages(clipboardData) {
+    if (!clipboardData) return [];
+
+    const files = [];
+    if (clipboardData.items && clipboardData.items.length) {
+        Array.from(clipboardData.items).forEach((item) => {
+            if (item.kind !== "file" || !IMAGE_CONTENT_TYPES.has(item.type)) return;
+            const file = item.getAsFile();
+            if (file) files.push(ensurePastedImageName(file));
+        });
+        return files;
+    }
+
+    if (clipboardData.files && clipboardData.files.length) {
+        Array.from(clipboardData.files).forEach((file) => {
+            if (IMAGE_CONTENT_TYPES.has(file.type)) files.push(ensurePastedImageName(file));
+        });
+    }
+
+    return files;
+}
 
 function inferAttachmentContentType(attachment) {
     const explicitType = typeof attachment.contentType === "string"
@@ -196,7 +252,7 @@ export class UI {
                 <button class="sw-send-btn" aria-label="Enviar" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
             </div>
             <input class="sw-file-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" multiple style="display:none;" />
-            <div class="sw-powered">Powered by <a href="#">Advertys</a></div>
+            <div class="sw-powered">Powered by <a href="#">DPS</a></div>
         `;
         this.shadow.appendChild(this.popup);
 
@@ -257,6 +313,10 @@ export class UI {
             if (img) this._openLightbox(img.src);
         });
 
+        this.popup.addEventListener("paste", (e) => {
+            this._handlePaste(e);
+        });
+
         this.shadow.addEventListener("keydown", (e) => {
             if (e.key === "Escape" && this.isOpen) this.close();
         });
@@ -275,23 +335,25 @@ export class UI {
         this.elSendBtn.disabled = !this.elInput.value.trim() && this._pendingAttachments.length === 0;
     }
 
+    _handlePaste(event) {
+        const pastedImages = extractPastedImages(event?.clipboardData);
+        if (pastedImages.length === 0) return;
+
+        event.preventDefault();
+        pastedImages.forEach((file) => this._handleFileSelect(file));
+    }
+
     _handleFileSelect(file) {
-        const allowed = {
-            "image/jpeg": 1,
-            "image/png": 1,
-            "image/gif": 1,
-            "image/webp": 1,
-            "application/pdf": 1
-        };
-        if (!allowed[file.type]) return;
+        if (!ALLOWED_ATTACHMENT_CONTENT_TYPES[file.type]) return;
         if (file.size > 5 * 1024 * 1024) return; // 5MB
 
+        const fileName = file.name || createPastedImageName(file.type);
         this._pendingAttachments.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2),
             file,
-            fileName: file.name,
+            fileName,
             contentType: file.type,
-            kind: getAttachmentKind({ contentType: file.type, fileName: file.name }),
+            kind: getAttachmentKind({ contentType: file.type, fileName }),
             localUrl: URL.createObjectURL(file)
         });
         this._showAttachmentPreview();
@@ -505,7 +567,7 @@ export class UI {
             attachments: pending.map((attachment) => ({
                 ...normalizeAttachment({
                     url: attachment.localUrl,
-                    fileName: attachment.file.name,
+                    fileName: attachment.fileName,
                     contentType: attachment.file.type
                 }, (url) => url),
                 temp: true
