@@ -1,19 +1,32 @@
+import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: {
-    file:  'soporte-widget.min.js',
+    file: 'soporte-widget.min.js',
     format: 'iife',
     name: 'SoporteWidget',
-    plugins: [terser({
+    globals: {
+      'signalr': 'signalR'
+    }
+  },
+  external: ['signalr'],
+  plugins: [
+    typescript({
+      tsconfig: './tsconfig.json',
+      declaration: false,
+      declarationMap: false
+    }),
+    terser({
       compress: {
         drop_console: false,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log']
       },
       output: {
         comments: false
       }
-    })]
-  }
+    })
+  ]
 };

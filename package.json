@@ -1,15 +1,26 @@
 {
   "name": "soporte-widget",
-  "version": "4.0.0",
+  "version": "2.0.0",
   "description": "Widget de chat embebible con SignalR",
   "main": "dist/soporte-widget.min.js",
+  "type": "module",
   "scripts": {
-    "test": "node --experimental-default-type=module --test tests/history-flow.test.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "build": "rollup -c",
-    "build:dev": "rollup -c --environment BUILD:development"
+    "build:dev": "rollup -c --environment BUILD:development",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "rollup": "^2.79.2",
-    "@rollup/plugin-terser": "^0.4.4"
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.14.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "rollup": "^4.40.0",
+    "ts-jest": "^29.3.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3"
   }
 }

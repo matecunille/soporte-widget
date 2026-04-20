@@ -1,0 +1,79 @@
+/**
+ * styles/mobile.ts
+ *
+ * Mobile-specific and responsive styles.
+ */
+
+import type { WidgetConfig } from '../types.js';
+
+export function generateMobileStyles(config: WidgetConfig): string {
+    return `
+@media (max-width: 480px) {
+    .sw-fab {
+        width: 48px;
+        height: 48px;
+        bottom: 16px;
+        ${config.position === 'left' ? 'left: 16px;' : 'right: 16px;'}
+    }
+
+    .sw-fab svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .sw-popup {
+        position: fixed;
+        inset: auto 0 0 0;
+        width: 100%;
+        max-width: 100%;
+        height: var(--sw-mobile-viewport-height, 100dvh);
+        max-height: 100dvh;
+        border-radius: 16px 16px 0 0;
+        bottom: 0;
+        ${config.position === 'left' ? '' : ''}
+    }
+
+    .sw-popup.visible {
+        transform: translateY(0);
+    }
+
+    .sw-header {
+        padding: 12px 16px;
+    }
+
+    .sw-header-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .sw-body {
+        padding: 12px;
+    }
+
+    .sw-msg-out,
+    .sw-msg-in {
+        max-width: 90%;
+        padding: 8px 12px;
+    }
+
+    .sw-footer {
+        padding: 10px 12px;
+    }
+
+    .sw-attachment-preview {
+        padding: 10px 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sw-fab,
+    .sw-popup,
+    .sw-msg-image,
+    .sw-send-btn,
+    .sw-attach-btn {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+`;
+}
