@@ -7,8 +7,8 @@
 
 import { escapeHtml, formatTime } from './utils.js';
 import type { WidgetConfig, Message, Attachment } from './types.js';
-import { FILE_KIND_IMAGE, FILE_KIND_PDF } from './attachments.js';
-import { fileIconSvg } from './styles/icons.js';
+import { FILE_KIND_IMAGE, FILE_KIND_PDF, getFileExtension } from './attachments.js';
+import { downloadIconSvg, fileIconSvg } from './styles/icons.js';
 
 interface RenderOptions {
     welcomeScreen: boolean;
@@ -147,22 +147,56 @@ export class MessageRenderer {
             return `<img class="sw-msg-image" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(attachment.fileName || 'imagen')}" />`;
         }
 
+        const fileName = attachment.fileName || 'Archivo';
         const fileLabel = attachment.kind === FILE_KIND_PDF ? 'Descargar PDF' : 'Descargar archivo';
         const fileIcon = attachment.kind === FILE_KIND_PDF ? 'PDF' : fileIconSvg;
+        const fileBadge = this.getAttachmentBadge(attachment);
+        const fileDescriptor = this.getAttachmentDescriptor(attachment);
 
         return `
             <a class="sw-msg-file sw-msg-file-${attachment.kind}" 
                href="${escapeHtml(attachmentUrl)}" 
-               download="${escapeHtml(attachment.fileName || 'archivo')}" 
+               download="${escapeHtml(fileName)}" 
                data-url="${escapeHtml(attachmentUrl)}" 
-               data-file-name="${escapeHtml(attachment.fileName || 'archivo')}">
+               data-file-name="${escapeHtml(fileName)}"
+               aria-label="${escapeHtml(`${fileLabel}: ${fileName}`)}">
                 <span class="sw-msg-file-icon">${fileIcon}</span>
                 <div class="sw-msg-file-meta">
-                    <div class="sw-msg-file-name">${escapeHtml(attachment.fileName || 'Archivo')}</div>
-                    <div class="sw-msg-file-action">${fileLabel}</div>
+                    <div class="sw-msg-file-topline">
+                        <span class="sw-msg-file-badge">${escapeHtml(fileBadge)}</span>
+                        <span class="sw-msg-file-caption">${escapeHtml(fileDescriptor)}</span>
+                    </div>
+                    <div class="sw-msg-file-name" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</div>
+                    <div class="sw-msg-file-footer">
+                        <span class="sw-msg-file-action">${fileLabel}</span>
+                        <span class="sw-msg-file-cta" aria-hidden="true">${downloadIconSvg}</span>
+                    </div>
                 </div>
             </a>
         `;
+    }
+
+    private getAttachmentBadge(attachment: Attachment): string {
+        if (attachment.kind === FILE_KIND_PDF) return 'PDF';
+
+        const extension = getFileExtension(attachment.fileName || attachment.url || '');
+        return extension ? extension.slice(1).toUpperCase() : 'FILE';
+    }
+
+    private getAttachmentDescriptor(attachment: Attachment): string {
+        if (attachment.kind === FILE_KIND_PDF) return 'Documento PDF';
+
+        switch (getFileExtension(attachment.fileName || attachment.url || '')) {
+            case '.xls':
+            case '.xlsx':
+                return 'Hoja de calculo';
+            case '.docx':
+                return 'Documento Word';
+            case '.txt':
+                return 'Archivo de texto';
+            default:
+                return 'Archivo adjunto';
+        }
     }
 }
 

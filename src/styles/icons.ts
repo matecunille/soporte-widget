@@ -29,3 +29,9 @@ export const fileIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="current
     <line x1="16" y1="17" x2="8" y2="17"/>
     <polyline points="10 9 9 9 8 9"/>
 </svg>`;
+
+export const downloadIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3v11"/>
+    <polyline points="7 11 12 16 17 11"/>
+    <path d="M5 21h14"/>
+</svg>`;

@@ -282,32 +282,47 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 
 /* Message files */
 .sw-msg-file {
-    display: flex;
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 12px;
-    padding: 12px 14px;
-    background: rgba(0,0,0,0.04);
-    border-radius: 14px;
-    border: 1px solid rgba(0,0,0,0.07);
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(247,247,247,0.92) 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(15,23,42,0.08);
     text-decoration: none;
     color: inherit;
-    margin-bottom: 4px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 6px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(15,23,42,0.08);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sw-msg-file::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, rgba(var(--sw-primary-rgb), 0.95) 0%, rgba(var(--sw-primary-rgb), 0.45) 100%);
 }
 
 .sw-msg-file:hover {
-    background: rgba(0,0,0,0.07);
-    border-color: rgba(0,0,0,0.12);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+    border-color: rgba(var(--sw-primary-rgb), 0.2);
+    box-shadow: 0 14px 28px rgba(15,23,42,0.12);
 }
 
 .sw-msg-file-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: var(--sw-primary);
-    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    margin-left: 4px;
+    background: linear-gradient(180deg, #ffffff 0%, #eef2f6 100%);
+    color: #475569;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -315,7 +330,8 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.5px;
-    box-shadow: 0 2px 6px rgba(var(--sw-primary-rgb), 0.35);
+    border: 1px solid rgba(148,163,184,0.18);
+    box-shadow: 0 8px 16px rgba(15,23,42,0.08);
 }
 
 .sw-msg-file-icon svg {
@@ -330,24 +346,30 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 
 /* Archivos en mensajes salientes - mejor contraste */
 .sw-msg-out .sw-msg-file {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.12) 100%);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.sw-msg-out .sw-msg-file::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.4) 100%);
 }
 
 .sw-msg-out .sw-msg-file:hover {
-    background: rgba(255, 255, 255, 0.32);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.16) 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 14px 28px rgba(0,0,0,0.16);
 }
 
 .sw-msg-out .sw-msg-file-icon {
     background: rgba(255, 255, 255, 0.95);
     color: var(--sw-primary);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.14);
 }
 
 .sw-msg-out .sw-msg-file-pdf .sw-msg-file-icon {
-    color: #e53935;
+    color: #d92d20;
 }
 
 .sw-msg-file-meta {
@@ -355,23 +377,108 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 8px;
+}
+
+.sw-msg-file-topline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sw-msg-file-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(var(--sw-primary-rgb), 0.12);
+    color: #b45309;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.sw-msg-file-pdf .sw-msg-file-badge {
+    background: rgba(217,45,32,0.12);
+    color: #b42318;
+}
+
+.sw-msg-out .sw-msg-file-badge {
+    background: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.95);
+}
+
+.sw-msg-file-caption {
+    font-size: 11px;
+    color: rgba(15,23,42,0.56);
+    font-weight: 600;
 }
 
 .sw-msg-file-name {
-    font-weight: 600;
-    font-size: 13px;
-    line-height: 1.3;
-    white-space: nowrap;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
+    color: #0f172a;
+}
+
+.sw-msg-file-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .sw-msg-file-action {
-    font-size: 11px;
-    opacity: 0.6;
-    font-weight: 500;
-    letter-spacing: 0.2px;
+    font-size: 12px;
+    color: rgba(15,23,42,0.62);
+    font-weight: 600;
+}
+
+.sw-msg-file-cta {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(15,23,42,0.06);
+    color: rgba(15,23,42,0.68);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sw-msg-file-cta svg {
+    width: 16px;
+    height: 16px;
+}
+
+.sw-msg-file:hover .sw-msg-file-cta {
+    transform: translateX(2px);
+}
+
+.sw-msg-out .sw-msg-file-caption {
+    color: rgba(255,255,255,0.72);
+}
+
+.sw-msg-out .sw-msg-file-name {
+    color: #ffffff;
+}
+
+.sw-msg-out .sw-msg-file-action {
+    color: rgba(255,255,255,0.82);
+}
+
+.sw-msg-out .sw-msg-file-cta {
+    background: rgba(255,255,255,0.14);
+    color: #ffffff;
 }
 
 /* ============================================
