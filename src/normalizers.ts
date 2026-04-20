@@ -119,12 +119,15 @@ export function normalizeHistoryPayload(
         (history as { Id?: string | number }).Id ??
         null;
 
+    // Normalize and sort messages chronologically (oldest first)
+    const normalizedMessages = (rawMessages as MessageDTO[])
+        .map((message) => normalizeHistoryMessage(message, resolveUrl))
+        .sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+
     return {
         conversationId: rawConversationId == null || rawConversationId === '' 
             ? null 
             : String(rawConversationId),
-        messages: (rawMessages as MessageDTO[]).map((message) => 
-            normalizeHistoryMessage(message, resolveUrl)
-        )
+        messages: normalizedMessages
     };
 }

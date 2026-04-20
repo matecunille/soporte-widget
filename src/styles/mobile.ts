@@ -70,9 +70,24 @@ export function generateMobileStyles(config: WidgetConfig): string {
     .sw-popup,
     .sw-msg-image,
     .sw-send-btn,
-    .sw-attach-btn {
+    .sw-attach-btn,
+    .sw-msg-out,
+    .sw-msg-in,
+    .sw-attachment-preview-item,
+    .sw-welcome,
+    .sw-welcome-icon,
+    .sw-welcome-title,
+    .sw-welcome-text,
+    .sw-badge,
+    .sw-typing-indicator,
+    .sw-attachment-preview-thumb {
         transition: none !important;
         animation: none !important;
+        transform: none !important;
+    }
+    
+    .sw-popup.visible {
+        filter: none;
     }
 }
 `;

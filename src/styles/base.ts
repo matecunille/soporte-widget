@@ -38,16 +38,23 @@ export function generateBaseStyles(config: WidgetConfig, primaryRgb: string): st
     align-items: center;
     justify-content: center;
     z-index: var(--sw-z-index);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: sw-fab-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sw-fab:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    transform: scale(1.08) rotate(5deg);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2), 0 0 0 3px rgba(var(--sw-primary-rgb), 0.15);
 }
 
 .sw-fab.open {
-    transform: scale(0.9);
+    transform: scale(0.9) rotate(90deg);
+}
+
+.sw-fab.has-unread {
+    animation: sw-fab-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+               sw-fab-pulse 2s ease-in-out infinite 0.6s;
 }
 
 .sw-icon-chat,
@@ -84,11 +91,15 @@ export function generateBaseStyles(config: WidgetConfig, primaryRgb: string): st
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transform: scale(0);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sw-badge.visible {
     opacity: 1;
+    transform: scale(1);
+    animation: sw-badge-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s;
 }
 
 .sw-popup {
@@ -100,22 +111,27 @@ export function generateBaseStyles(config: WidgetConfig, primaryRgb: string): st
     height: 600px;
     max-height: calc(100vh - 120px);
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-radius: 20px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     z-index: calc(var(--sw-z-index) - 1);
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(30px) scale(0.92);
     pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                filter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: blur(8px);
 }
 
 .sw-popup.visible {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
+    filter: blur(0);
+    animation: sw-popup-bloom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 `;
 }

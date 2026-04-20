@@ -41,11 +41,12 @@ export class MessageRenderer {
     /**
      * Renders a single new message for incremental DOM updates.
      */
-    renderSingleMessage(message: Message, isStartOfGroup: boolean, isEndOfGroup: boolean): string {
+    renderSingleMessage(message: Message, isStartOfGroup: boolean, isEndOfGroup: boolean, animate: boolean = true): string {
         if (message.isFromLead) {
             let html = '';
             if (isStartOfGroup) {
-                html += '<div class="sw-msg-out-group">';
+                const animateClass = animate ? ' sw-animate-in' : '';
+                html += `<div class="sw-msg-out-group${animateClass}">`;
             }
             html += `<div class="sw-msg-out">${this.renderMessageContent(message)}</div>`;
             if (isEndOfGroup) {
@@ -56,7 +57,8 @@ export class MessageRenderer {
         } else {
             let html = '';
             if (isStartOfGroup) {
-                html += '<div class="sw-msg-in-group">';
+                const animateClass = animate ? ' sw-animate-in' : '';
+                html += `<div class="sw-msg-in-group${animateClass}">`;
                 html += `<div class="sw-msg-sender">${escapeHtml(this.config.agentName)}</div>`;
             }
             html += `<div class="sw-msg-in">${this.renderMessageContent(message)}</div>`;

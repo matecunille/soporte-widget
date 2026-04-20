@@ -676,6 +676,26 @@ export class UI {
         this.tracker.markFailed(tempId);
     }
 
+    /**
+     * Find the correct chronological insertion index for a new message.
+     * Messages are sorted by sentAt (oldest first). Messages with same timestamp
+     * maintain their relative order (stable sort behavior).
+     */
+    private findChronologicalInsertIndex(newMessage: Message): number {
+        const newTime = new Date(newMessage.sentAt).getTime();
+        
+        // Handle edge cases
+        if (this.messages.length === 0) return 0;
+        
+        // Find the first message with a timestamp greater than the new message
+        const insertIndex = this.messages.findIndex((m) => 
+            new Date(m.sentAt).getTime() > newTime
+        );
+        
+        // If no such message found, insert at the end
+        return insertIndex === -1 ? this.messages.length : insertIndex;
+    }
+
     // ========================================================================
     // SignalR + history
     // ========================================================================
@@ -707,7 +727,10 @@ export class UI {
                     sentAt
                 })) return;
 
-                this.messages.push({ content, sentAt, isFromLead, attachments: normalizedAttachments });
+                // Insert message at correct chronological position
+                const newMessage: Message = { content, sentAt, isFromLead, attachments: normalizedAttachments };
+                const insertIndex = this.findChronologicalInsertIndex(newMessage);
+                this.messages.splice(insertIndex, 0, newMessage);
 
                 if (!this.isOpen) {
                     this.unread++;
@@ -715,8 +738,8 @@ export class UI {
                 }
                 if (this.cfg.soundEnabled && !isFromLead) playNotificationSound();
 
-                // Incremental render for new message
-                this.appendMessageToDOM(this.messages.length - 1);
+                // Incremental render for new message at correct position
+                this.appendMessageToDOM(insertIndex);
                 this.scrollToBottom();
                 this.emit('message', { content, sentAt, isFromLead });
             },
@@ -782,17 +805,31 @@ export class UI {
     private appendMessageToDOM(index: number): void {
         if (!this.elMessages || index < 0 || index >= this.messages.length) return;
 
+        // When inserting in the middle of the list, we need a full re-render
+        // to maintain proper chronological order and message grouping
+        const isLastMessage = index === this.messages.length - 1;
+        
+        if (!isLastMessage) {
+            // Message inserted in the middle - full re-render required
+            this.renderMessages(true);
+            this.scrollToBottom(true);
+            return;
+        }
+
+        // Message is at the end - can use incremental rendering
         const message = this.messages[index]!;
         const isStart = isStartOfNewGroup(this.messages, index);
         const isEnd = isEndOfGroup(this.messages, index);
 
-        const html = this.renderer.renderSingleMessage(message, isStart, isEnd);
+        // Only animate new messages (when appended at the end)
+        const shouldAnimate = index === this.messages.length - 1;
+        const html = this.renderer.renderSingleMessage(message, isStart, isEnd, shouldAnimate);
 
         if (isStart) {
-            // New group - append directly
+            // New group - append directly to end
             this.elMessages.insertAdjacentHTML('beforeend', html);
         } else {
-            // Same group - need to modify existing group
+            // Same group - need to modify existing last group
             // For simplicity, do a targeted re-render of the last group
             this.renderMessages(true);
         }
@@ -965,7 +1002,10 @@ export class UI {
         this.sending = true;
         this.lastSendTime = Date.now();
         this.elInput.value = '';
-        if (this.elSendBtn) this.elSendBtn.disabled = true;
+        if (this.elSendBtn) {
+            this.elSendBtn.disabled = true;
+            this.elSendBtn.classList.add('sending');
+        }
 
         const tempId = this.tracker.createTempId();
         const sentAt = new Date().toISOString();
@@ -988,6 +1028,8 @@ export class UI {
         };
 
         this.tracker.register(tempId, sentAt, normalizedContent, pending);
+        // Optimistic messages always append to the end (they are the newest from user's perspective)
+        // Only backend messages get sorted chronologically
         this.messages.push(optimisticMsg);
         this.appendMessageToDOM(this.messages.length - 1);
         this.scrollToBottom(true);
@@ -1034,6 +1076,9 @@ export class UI {
         } finally {
             this.clearPendingAttachments(false);
             this.sending = false;
+            if (this.elSendBtn) {
+                this.elSendBtn.classList.remove('sending');
+            }
             this.updateSendButton();
         }
     }

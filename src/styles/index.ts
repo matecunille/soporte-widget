@@ -8,6 +8,7 @@ import type { WidgetConfig } from '../types.js';
 import { generateBaseStyles } from './base.js';
 import { generateComponentStyles } from './components.js';
 import { generateMobileStyles } from './mobile.js';
+import { animationKeyframes } from './animations.js';
 
 export function generateStyles(config: WidgetConfig): string {
     const primaryRgb = config.primaryColor.replace('#', '');
@@ -16,6 +17,7 @@ export function generateStyles(config: WidgetConfig): string {
         : primaryRgb;
 
     return [
+        animationKeyframes,
         generateBaseStyles(config, expandedRgb),
         generateComponentStyles(config, expandedRgb),
         generateMobileStyles(config)

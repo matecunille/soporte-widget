@@ -126,6 +126,7 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 .sw-welcome {
     text-align: center;
     padding: 40px 20px;
+    animation: sw-welcome-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .sw-welcome-icon {
@@ -140,6 +141,8 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     font-size: 28px;
     font-weight: 600;
     margin: 0 auto 16px;
+    animation: sw-welcome-icon-float 3s ease-in-out infinite;
+    box-shadow: 0 4px 16px rgba(var(--sw-primary-rgb), 0.3);
 }
 
 .sw-welcome-icon img {
@@ -154,11 +157,15 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     font-size: 18px;
     color: #333;
     margin-bottom: 8px;
+    opacity: 0;
+    animation: sw-welcome-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
 }
 
 .sw-welcome-text {
     font-size: 14px;
     color: #666;
+    opacity: 0;
+    animation: sw-welcome-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
 }
 
 /* Message groups */
@@ -173,8 +180,16 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     align-items: flex-end;
 }
 
+.sw-msg-out-group.sw-animate-in {
+    animation: sw-msg-slide-in-right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 .sw-msg-in-group {
     align-items: flex-start;
+}
+
+.sw-msg-in-group.sw-animate-in {
+    animation: sw-msg-slide-in-left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .sw-msg-sender {
@@ -192,19 +207,32 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     font-size: 14px;
     line-height: 1.4;
     word-wrap: break-word;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sw-msg-out {
     background: var(--sw-primary);
     color: white;
     border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 8px rgba(var(--sw-primary-rgb), 0.25);
+}
+
+.sw-msg-out:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(var(--sw-primary-rgb), 0.35);
 }
 
 .sw-msg-in {
     background: white;
     color: #333;
     border-bottom-left-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.sw-msg-in:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 .sw-msg-time {
@@ -324,6 +352,14 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     padding: 8px;
     background: #f5f5f5;
     border-radius: 8px;
+    animation: sw-attachment-preview-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sw-attachment-preview-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .sw-attachment-preview-thumb {
@@ -331,6 +367,7 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     height: 48px;
     border-radius: 6px;
     object-fit: cover;
+    animation: sw-image-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sw-attachment-preview-remove {
@@ -349,6 +386,17 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.sw-attachment-preview-remove:hover {
+    transform: scale(1.2) rotate(90deg);
+    background: #d32f2f;
+}
+
+.sw-attachment-preview-remove:active {
+    transform: scale(0.9);
 }
 
 .sw-attachment-validation {
@@ -384,15 +432,28 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     justify-content: center;
     color: #666;
     flex-shrink: 0;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sw-attach-btn:hover {
-    background: #e0e0e0;
+    background: var(--sw-primary);
+    color: white;
+    transform: scale(1.1) rotate(-10deg);
+    box-shadow: 0 4px 12px rgba(var(--sw-primary-rgb), 0.3);
+}
+
+.sw-attach-btn:active {
+    transform: scale(0.95) rotate(-5deg);
 }
 
 .sw-attach-btn svg {
     width: 20px;
     height: 20px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sw-attach-btn:hover svg {
+    transform: rotate(15deg);
 }
 
 .sw-input {
@@ -403,10 +464,46 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     border-radius: 20px;
     font-size: 14px;
     outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sw-input:focus {
-    background: #eeeeee;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(var(--sw-primary-rgb), 0.15), inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Typing indicator */
+.sw-typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    width: fit-content;
+    animation: sw-msg-slide-in-left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sw-typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--sw-primary);
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: sw-typing-bounce 1.4s ease-in-out infinite;
+}
+
+.sw-typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.sw-typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.sw-typing-indicator span:nth-child(3) {
+    animation-delay: 0s;
 }
 
 .sw-send-btn {
@@ -421,22 +518,51 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sw-send-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .sw-send-btn:hover:not(:disabled) {
-    transform: scale(1.05);
+    transform: scale(1.12);
+    box-shadow: 0 4px 16px rgba(var(--sw-primary-rgb), 0.4);
+}
+
+.sw-send-btn:hover:not(:disabled)::before {
+    opacity: 1;
+}
+
+.sw-send-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.sw-send-btn.sending {
+    animation: sw-send-success 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sw-send-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
+    transform: scale(0.95);
 }
 
 .sw-send-btn svg {
     width: 18px;
     height: 18px;
-    margin-left: 2px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sw-send-btn:hover:not(:disabled) svg {
+    transform: translateX(2px) translateY(-1px);
 }
 
 .sw-file-input {
