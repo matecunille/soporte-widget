@@ -1,11 +1,8 @@
 /**
  * normalizers.ts
  *
- * Pure DTO normalization functions for backend payloads.
- * No DOM access, no side effects, no UI dependencies.
- *
- * Accepts camelCase and PascalCase variants from the backend
- * (e.g. content/Content, messages/Messages) — preserve this tolerance.
+ * DTO normalization for backend payloads.
+ * Backend contract: consistent camelCase from Rame API.
  */
 
 import type { 
@@ -15,119 +12,113 @@ import type {
     MessageDTO, 
     HistoryPayload, 
     HistoryDTO,
-    ConversationDTO 
+    ApiSendResponse 
 } from './types.js';
 import { inferAttachmentContentType, getAttachmentKind } from './attachments.js';
+import { compareUtcDates } from './utils.js';
 
 /**
- * Normalizes a raw attachment DTO from the backend into a consistent shape.
+ * Normalizes a backend attachment DTO.
+ * Backend sends: { sasUrl, fileName, contentType }
  */
 export function normalizeAttachment(
     attachment: AttachmentDTO,
     resolveUrl: (url: string | undefined) => string | undefined
 ): Attachment {
-    const rawUrl = (
-        attachment.sasUrl ??
-        attachment.SasUrl ??
-        attachment.url ??
-        attachment.Url ??
-        attachment.localUrl ??
-        attachment.imageUrl ??
-        attachment.ImageUrl
-    );
-    const rawImageUrl = attachment.imageUrl ?? attachment.ImageUrl ?? rawUrl;
-    const url = resolveUrl(rawUrl);
-    const imageUrl = rawImageUrl ? resolveUrl(rawImageUrl) : url;
-    const contentType = inferAttachmentContentType(attachment);
+    // Backend usa sasUrl para URLs firmadas, o url para URLs públicas
+    const rawUrl = attachment.sasUrl ?? attachment.SasUrl ?? attachment.url ?? attachment.Url;
+    const url = resolveUrl(rawUrl) ?? '';
+    const contentType = attachment.contentType ?? attachment.ContentType ?? '';
     const fileName = attachment.fileName ?? attachment.FileName ?? attachment.name ?? attachment.Name ?? 'Archivo';
 
+    // Infer content type from fileName/URL if not explicitly provided
+    const finalContentType = contentType || inferAttachmentContentType(attachment);
+
     return {
-        url: url ?? '',
-        imageUrl,
+        url,
+        imageUrl: undefined,
         fileName,
-        contentType,
-        kind: getAttachmentKind({ ...attachment, contentType, fileName, url, imageUrl })
+        contentType: finalContentType,
+        kind: getAttachmentKind({ contentType: finalContentType, fileName, url })
     };
 }
 
 /**
- * Normalizes a single history message DTO.
+ * Normalizes a single message DTO.
+ * Backend sends: { content, sentAt, isFromLead, attachments }
  */
-function normalizeHistoryMessage(
+function normalizeMessage(
     message: MessageDTO,
     resolveUrl: (url: string | undefined) => string | undefined
 ): Message {
-    let content: string = message.content as string ?? message.Content as string ?? '';
-    
-    if (typeof content === 'object' && content !== null) {
-        const contentObj = content as { content?: string; Content?: string };
-        content = contentObj.content ?? contentObj.Content ?? JSON.stringify(content);
+    // Content puede venir como string u objeto
+    let content = '';
+    const rawContent = message.content ?? message.Content;
+    if (typeof rawContent === 'string') {
+        content = rawContent;
+    } else if (rawContent && typeof rawContent === 'object') {
+        const contentObj = rawContent as { content?: string; Content?: string };
+        content = contentObj.content ?? contentObj.Content ?? JSON.stringify(rawContent);
     }
 
-    const rawAttachments = Array.isArray(message.attachments)
-        ? message.attachments
-        : Array.isArray(message.Attachments)
-            ? message.Attachments
-            : [];
-    const attachments = rawAttachments.map((attachment) => normalizeAttachment(attachment, resolveUrl));
+    // sentAt es UTC ISO string del backend
+    const sentAt = message.sentAt ?? message.SentAt ?? new Date().toISOString();
+    const isFromLead = message.isFromLead ?? message.IsFromLead ?? false;
+    
+    // Attachments array
+    const rawAttachments = message.attachments ?? message.Attachments ?? [];
+    const attachments = Array.isArray(rawAttachments)
+        ? rawAttachments.map(a => normalizeAttachment(a, resolveUrl))
+        : [];
 
-    return {
-        content: String(content),
-        sentAt: message.sentAt ?? message.SentAt ?? new Date().toISOString(),
-        isFromLead: message.isFromLead ?? message.IsFromLead ?? false,
-        attachments
-    };
+    return { content, sentAt, isFromLead, attachments };
 }
 
 /**
- * Normalizes the full history payload returned by the backend.
- * Accepts multiple payload shapes:
- *   - Raw array of messages
- *   - { conversation: { messages: [...] }, ... }
- *   - Flat object with messages/Messages at the root
+ * Normalizes the history payload from GET /api/widget/conversations/history
+ * Backend response: { conversationId, messages: [...] }
  */
 export function normalizeHistoryPayload(
     payload: HistoryDTO | undefined | null,
     resolveUrl: (url: string | undefined) => string | undefined
 ): HistoryPayload {
-    const history = payload ?? [];
-    
-    const isArray = Array.isArray(history);
-    const conversation = isArray
-        ? null
-        : (history as { conversation?: ConversationDTO; Conversation?: ConversationDTO }).conversation 
-            ?? (history as { conversation?: ConversationDTO; Conversation?: ConversationDTO }).Conversation 
-            ?? (history as ConversationDTO);
-    
-    const rawMessages = isArray
-        ? (history as MessageDTO[])
-        : [
-            conversation?.messages,
-            conversation?.Messages,
-            (history as { messages?: MessageDTO[] }).messages,
-            (history as { Messages?: MessageDTO[] }).Messages
-        ].find(Array.isArray) ?? [];
-    
-    const rawConversationId =
-        conversation?.conversationId ??
-        conversation?.ConversationId ??
-        conversation?.id ??
-        conversation?.Id ??
-        (history as { conversationId?: string | number }).conversationId ??
-        (history as { ConversationId?: string | number }).ConversationId ??
-        (history as { id?: string | number }).id ??
-        (history as { Id?: string | number }).Id ??
-        null;
+    if (!payload) {
+        return { conversationId: null, messages: [] };
+    }
 
-    // Normalize and sort messages chronologically (oldest first)
-    const normalizedMessages = (rawMessages as MessageDTO[])
-        .map((message) => normalizeHistoryMessage(message, resolveUrl))
-        .sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+    // Backend devuelve objeto plano: { conversationId, messages }
+    const data = payload as { conversationId?: string | number; messages?: MessageDTO[] };
+    
+    const rawConversationId = data.conversationId;
+    const conversationId = rawConversationId != null && rawConversationId !== '' 
+        ? String(rawConversationId) 
+        : null;
+    
+    const rawMessages = data.messages ?? [];
+    const messages = Array.isArray(rawMessages)
+        ? rawMessages.map(m => normalizeMessage(m, resolveUrl))
+            .sort((a, b) => compareUtcDates(a.sentAt, b.sentAt))
+        : [];
+
+    return { conversationId, messages };
+}
+
+/**
+ * Normalizes the send message API response.
+ * Backend sends: { conversationId, sentAt, attachments }
+ */
+export function normalizeSendResponse(
+    response: Record<string, unknown> | undefined
+): ApiSendResponse {
+    if (!response) return {};
+
+    const conversationId = response.conversationId ?? response.ConversationId;
+    const sentAt = response.sentAt ?? response.SentAt;
+    const attachments = response.attachments ?? response.Attachments;
 
     return {
-        conversationId: rawConversationId == null || rawConversationId === '' 
-            ? null 
-            : String(rawConversationId),
-        messages: normalizedMessages
+        conversationId: typeof conversationId === 'string' ? conversationId : undefined,
+        SentAt: typeof sentAt === 'string' ? sentAt : undefined,
+        Attachments: Array.isArray(attachments) ? attachments as AttachmentDTO[] : undefined
     };
 }

@@ -14,11 +14,50 @@ export function escapeHtml(text: string): string {
     return span.innerHTML;
 }
 
+/**
+ * Converts a UTC ISO string to local Date object.
+ * Ensures proper timezone conversion for display.
+ */
+export function utcToLocal(utcIsoString: string): Date {
+    // If string doesn't have timezone info, assume it's UTC and append 'Z'
+    const normalizedUtc = utcIsoString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(utcIsoString)
+        ? utcIsoString
+        : utcIsoString + 'Z';
+    return new Date(normalizedUtc);
+}
+
+/**
+ * Formats a time string (assumes UTC input from backend) to local time display.
+ */
 export function formatTime(isoString: string): string {
-    const date = new Date(isoString);
+    const date = utcToLocal(isoString);
     const hours = date.getHours();
     const minutes = date.getMinutes();
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Formats full date and time in local timezone.
+ */
+export function formatDateTime(isoString: string): string {
+    const date = utcToLocal(isoString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+/**
+ * Compares two UTC ISO strings for sorting.
+ * Returns negative if a < b, positive if a > b, 0 if equal.
+ * Handles UTC strings correctly regardless of timezone.
+ */
+export function compareUtcDates(a: string, b: string): number {
+    const dateA = utcToLocal(a).getTime();
+    const dateB = utcToLocal(b).getTime();
+    return dateA - dateB;
 }
 
 export function hexToRgb(hex: string): string {

@@ -8,7 +8,7 @@
 import { ApiClient } from './api-client.js';
 import { SignalRManager } from './signalr-manager.js';
 import { generateStyles, closeIconSvg } from './styles.js';
-import { escapeHtml, playNotificationSound, setWidgetCredentials } from './utils.js';
+import { escapeHtml, playNotificationSound, setWidgetCredentials, compareUtcDates } from './utils.js';
 import { MessageRenderer, isStartOfNewGroup, isEndOfGroup } from './message-renderer.js';
 import {
     FILE_KIND_IMAGE,
@@ -665,7 +665,8 @@ export class UI {
 
         // Only re-sort if timestamp changed
         if (sentAt && sentAt !== oldMsg.sentAt) {
-            this.messages.sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+            // Use UTC-aware comparison for consistent ordering
+            this.messages.sort((a, b) => compareUtcDates(a.sentAt, b.sentAt));
             this.renderMessages(true);
         } else {
             this.renderMessages(true);
