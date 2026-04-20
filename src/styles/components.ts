@@ -380,14 +380,20 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     background: #ff4444;
     color: white;
     border: none;
-    font-size: 14px;
-    line-height: 1;
+    padding: 0;
+    margin: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.sw-attachment-preview-remove svg {
+    width: 10px;
+    height: 10px;
+    display: block;
 }
 
 .sw-attachment-preview-remove:hover {
@@ -468,8 +474,7 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 }
 
 .sw-input:focus {
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(var(--sw-primary-rgb), 0.15), inset 0 1px 2px rgba(0,0,0,0.05);
+    background: #eeeeee;
 }
 
 /* Typing indicator */

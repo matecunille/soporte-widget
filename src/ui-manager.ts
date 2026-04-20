@@ -487,7 +487,12 @@ export class UI {
             return `
                 <div class="sw-attachment-preview-item" data-id="${attachment.id}">
                     ${previewContent}
-                    <button class="sw-attachment-preview-remove" aria-label="Quitar">×</button>
+                    <button class="sw-attachment-preview-remove" aria-label="Quitar">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
                 </div>
             `;
         }).join('');
@@ -676,26 +681,6 @@ export class UI {
         this.tracker.markFailed(tempId);
     }
 
-    /**
-     * Find the correct chronological insertion index for a new message.
-     * Messages are sorted by sentAt (oldest first). Messages with same timestamp
-     * maintain their relative order (stable sort behavior).
-     */
-    private findChronologicalInsertIndex(newMessage: Message): number {
-        const newTime = new Date(newMessage.sentAt).getTime();
-        
-        // Handle edge cases
-        if (this.messages.length === 0) return 0;
-        
-        // Find the first message with a timestamp greater than the new message
-        const insertIndex = this.messages.findIndex((m) => 
-            new Date(m.sentAt).getTime() > newTime
-        );
-        
-        // If no such message found, insert at the end
-        return insertIndex === -1 ? this.messages.length : insertIndex;
-    }
-
     // ========================================================================
     // SignalR + history
     // ========================================================================
@@ -727,10 +712,10 @@ export class UI {
                     sentAt
                 })) return;
 
-                // Insert message at correct chronological position
+                // Real-time messages always append to the end - never re-order history
+                // Only initial history load should be sorted chronologically
                 const newMessage: Message = { content, sentAt, isFromLead, attachments: normalizedAttachments };
-                const insertIndex = this.findChronologicalInsertIndex(newMessage);
-                this.messages.splice(insertIndex, 0, newMessage);
+                this.messages.push(newMessage);
 
                 if (!this.isOpen) {
                     this.unread++;
@@ -738,8 +723,8 @@ export class UI {
                 }
                 if (this.cfg.soundEnabled && !isFromLead) playNotificationSound();
 
-                // Incremental render for new message at correct position
-                this.appendMessageToDOM(insertIndex);
+                // Render at the end
+                this.appendMessageToDOM(this.messages.length - 1);
                 this.scrollToBottom();
                 this.emit('message', { content, sentAt, isFromLead });
             },
