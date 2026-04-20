@@ -11,15 +11,16 @@ import { generateStyles, closeIconSvg } from './styles.js';
 import { escapeHtml, playNotificationSound, setWidgetCredentials, compareUtcDates } from './utils.js';
 import { MessageRenderer, isStartOfNewGroup, isEndOfGroup } from './message-renderer.js';
 import {
+    createPendingAttachment,
     FILE_KIND_IMAGE,
     FILE_KIND_PDF,
     FILE_INPUT_ACCEPT,
-    MAX_ATTACHMENT_SIZE_BYTES,
-    ATTACHMENT_VALIDATION_MESSAGES,
-    extractPastedFiles,
     isAllowedAttachmentFile,
-    createPendingAttachment
+    MAX_ATTACHMENT_SIZE_BYTES,
+    extractPastedFiles,
+    ATTACHMENT_VALIDATION_MESSAGES,
 } from './attachments.js';
+import { fileIconSvg } from './styles/icons.js';
 import { normalizeAttachment, normalizeHistoryPayload } from './normalizers.js';
 import { PendingTracker } from './pending-tracker.js';
 import { bindViewportEvents, updateMobileViewportLayout } from './viewport.js';
@@ -476,7 +477,7 @@ export class UI {
                 ? `<img class="sw-attachment-preview-thumb" src="${attachment.localUrl}" />`
                 : `
                     <div class="sw-msg-file sw-msg-file-${attachment.kind}">
-                        <span class="sw-msg-file-icon">${attachment.kind === FILE_KIND_PDF ? 'PDF' : 'FILE'}</span>
+                        <span class="sw-msg-file-icon">${attachment.kind === FILE_KIND_PDF ? 'PDF' : fileIconSvg}</span>
                         <div class="sw-msg-file-meta">
                             <div class="sw-msg-file-name">${escapeHtml(attachment.fileName)}</div>
                             <div class="sw-msg-file-action">${attachment.kind === FILE_KIND_PDF ? 'PDF listo para enviar' : 'Archivo listo para enviar'}</div>

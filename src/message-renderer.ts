@@ -8,6 +8,7 @@
 import { escapeHtml, formatTime } from './utils.js';
 import type { WidgetConfig, Message, Attachment } from './types.js';
 import { FILE_KIND_IMAGE, FILE_KIND_PDF } from './attachments.js';
+import { fileIconSvg } from './styles/icons.js';
 
 interface RenderOptions {
     welcomeScreen: boolean;
@@ -147,7 +148,7 @@ export class MessageRenderer {
         }
 
         const fileLabel = attachment.kind === FILE_KIND_PDF ? 'Descargar PDF' : 'Descargar archivo';
-        const fileIcon = attachment.kind === FILE_KIND_PDF ? 'PDF' : 'FILE';
+        const fileIcon = attachment.kind === FILE_KIND_PDF ? 'PDF' : fileIconSvg;
 
         return `
             <a class="sw-msg-file sw-msg-file-${attachment.kind}" 

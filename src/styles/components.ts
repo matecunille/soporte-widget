@@ -314,6 +314,21 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     background: #e53935;
 }
 
+/* Archivos en mensajes salientes - mejor contraste */
+.sw-msg-out .sw-msg-file {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sw-msg-out .sw-msg-file:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.sw-msg-out .sw-msg-file-icon {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--sw-primary);
+}
+
 .sw-msg-file-meta {
     flex: 1;
     min-width: 0;
