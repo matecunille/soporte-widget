@@ -284,67 +284,94 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 .sw-msg-file {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background: rgba(0,0,0,0.05);
-    border-radius: 12px;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.04);
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.07);
     text-decoration: none;
     color: inherit;
     margin-bottom: 4px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sw-msg-file:hover {
-    background: rgba(0,0,0,0.08);
+    background: rgba(0,0,0,0.07);
+    border-color: rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .sw-msg-file-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     background: var(--sw-primary);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(var(--sw-primary-rgb), 0.35);
+}
+
+.sw-msg-file-icon svg {
+    width: 22px;
+    height: 22px;
 }
 
 .sw-msg-file-pdf .sw-msg-file-icon {
     background: #e53935;
+    box-shadow: 0 2px 6px rgba(229,57,53,0.35);
 }
 
 /* Archivos en mensajes salientes - mejor contraste */
 .sw-msg-out .sw-msg-file {
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
 .sw-msg-out .sw-msg-file:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.32);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .sw-msg-out .sw-msg-file-icon {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     color: var(--sw-primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.sw-msg-out .sw-msg-file-pdf .sw-msg-file-icon {
+    color: #e53935;
 }
 
 .sw-msg-file-meta {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .sw-msg-file-name {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 13px;
+    line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .sw-msg-file-action {
-    font-size: 12px;
-    color: #666;
+    font-size: 11px;
+    opacity: 0.6;
+    font-weight: 500;
+    letter-spacing: 0.2px;
 }
 
 /* ============================================
