@@ -347,77 +347,204 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     color: #666;
 }
 
-/* Attachment preview */
+/* ============================================
+   ATTACHMENT PREVIEW - Editorial Card Design
+   ============================================ */
+
+/* Preview Container - Warm Gallery Feel */
 .sw-attachment-preview {
-    padding: 12px 16px;
-    background: white;
-    border-top: 1px solid #e0e0e0;
+    padding: 16px 20px;
+    background: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%);
+    border-top: 1px solid rgba(0,0,0,0.06);
     display: flex;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: wrap;
-    max-height: 120px;
+    max-height: 140px;
     overflow-y: auto;
+    position: relative;
 }
 
+.sw-attachment-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(254,113,9,0.2) 50%, transparent 100%);
+}
+
+/* Preview Item Cards */
 .sw-attachment-preview-item {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    animation: sw-attachment-preview-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    animation: sw-attachment-preview-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .sw-attachment-preview-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    border-color: rgba(254,113,9,0.2);
 }
 
+/* Image Preview - Intact */
 .sw-attachment-preview-thumb {
-    width: 48px;
-    height: 48px;
-    border-radius: 6px;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
     object-fit: cover;
     animation: sw-image-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+/* File Preview - Editorial Card Style */
+.sw-preview-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 180px;
+}
+
+.sw-preview-file-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sw-preview-file-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FE7109 0%, #ff8c42 100%);
+    opacity: 0.8;
+}
+
+.sw-preview-file-icon svg {
+    width: 28px;
+    height: 28px;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.sw-preview-file:hover .sw-preview-file-icon {
+    transform: scale(1.05) rotate(-3deg);
+    border-color: rgba(254,113,9,0.3);
+    box-shadow: 0 4px 12px rgba(254,113,9,0.15);
+}
+
+.sw-preview-file:hover .sw-preview-file-icon svg {
+    color: #FE7109;
+    transform: scale(1.1);
+}
+
+/* PDF Specific Styling */
+.sw-preview-file-pdf .sw-preview-file-icon {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+    border-color: rgba(230,57,70,0.2);
+}
+
+.sw-preview-file-pdf .sw-preview-file-icon::before {
+    background: linear-gradient(90deg, #e63946 0%, #ff6b6b 100%);
+}
+
+.sw-preview-file-pdf:hover .sw-preview-file-icon {
+    border-color: rgba(230,57,70,0.4);
+    box-shadow: 0 4px 12px rgba(230,57,70,0.15);
+}
+
+.sw-preview-file-pdf .sw-preview-file-icon svg,
+.sw-preview-file-pdf .sw-preview-file-icon {
+    color: #e63946;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* File Metadata */
+.sw-preview-file-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sw-preview-file-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #212529;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.sw-preview-file-type {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+/* Remove Button - Refined */
 .sw-attachment-preview-remove {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 20px;
-    height: 20px;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #ff4444;
     color: white;
-    border: none;
+    border: 2px solid white;
     padding: 0;
     margin: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 10;
 }
 
 .sw-attachment-preview-remove svg {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     display: block;
+    stroke-width: 2.5;
 }
 
 .sw-attachment-preview-remove:hover {
-    transform: scale(1.2) rotate(90deg);
+    transform: scale(1.15) rotate(90deg);
     background: #d32f2f;
+    box-shadow: 0 4px 12px rgba(211,47,47,0.3);
 }
 
 .sw-attachment-preview-remove:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 
 .sw-attachment-validation {

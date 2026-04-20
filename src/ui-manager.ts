@@ -476,11 +476,13 @@ export class UI {
             const previewContent = attachment.kind === FILE_KIND_IMAGE
                 ? `<img class="sw-attachment-preview-thumb" src="${attachment.localUrl}" />`
                 : `
-                    <div class="sw-msg-file sw-msg-file-${attachment.kind}">
-                        <span class="sw-msg-file-icon">${attachment.kind === FILE_KIND_PDF ? 'PDF' : fileIconSvg}</span>
-                        <div class="sw-msg-file-meta">
-                            <div class="sw-msg-file-name">${escapeHtml(attachment.fileName)}</div>
-                            <div class="sw-msg-file-action">${attachment.kind === FILE_KIND_PDF ? 'PDF listo para enviar' : 'Archivo listo para enviar'}</div>
+                    <div class="sw-preview-file sw-preview-file-${attachment.kind}">
+                        <div class="sw-preview-file-icon">
+                            ${attachment.kind === FILE_KIND_PDF ? 'PDF' : fileIconSvg}
+                        </div>
+                        <div class="sw-preview-file-meta">
+                            <div class="sw-preview-file-name">${escapeHtml(attachment.fileName)}</div>
+                            <div class="sw-preview-file-type">${attachment.kind === FILE_KIND_PDF ? 'Documento PDF' : 'Archivo'}</div>
                         </div>
                     </div>
                 `;
