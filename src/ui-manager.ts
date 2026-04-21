@@ -770,6 +770,22 @@ export class UI {
             this.updateStatus();
             this.updateConnectionErrorUI();
             
+            // Schedule automatic retry if circuit is still closed/half-open and widget is open
+            if (this.circuitBreaker.canAttemptReconnect() && this.isOpen) {
+                const failures = this.circuitBreaker.getFailureCount();
+                const delay = Math.min(1000 * Math.pow(2, failures), 5000); // 2s, 4s, 8s, max 5s cap
+                
+                console.log(`[CircuitBreaker] Scheduling retry attempt ${failures}/3 in ${delay}ms`);
+                
+                setTimeout(() => {
+                    // Double-check widget is still open and disconnected before retrying
+                    if (this.isOpen && this.status === 'disconnected' && this.circuitBreaker.canAttemptReconnect()) {
+                        console.log('[CircuitBreaker] Executing scheduled retry');
+                        void this.connect();
+                    }
+                }, delay);
+            }
+            
             // Don't throw - let the UI handle the failure state
             // throw err;
         }
