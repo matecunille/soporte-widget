@@ -59,7 +59,7 @@ export class SignalRManager {
 
     private mapAttachment(attachment: Record<string, unknown>): AttachmentDTO {
         return {
-            sasUrl: (attachment.url ?? '') as string,
+            sasUrl: (attachment.sasUrl ?? '') as string,
             fileName: (attachment.fileName ?? '') as string,
             contentType: (attachment.contentType ?? '')as string
         };
