@@ -134,43 +134,6 @@ export function extractPastedFiles(clipboardData: DataTransfer | null): File[] {
 }
 
 /**
- * Infers the MIME type of an attachment from its explicit contentType field,
- * or falls back to extension inference from the URL/filename.
- * Accepts both camelCase and PascalCase field variants.
- */
-export function inferAttachmentContentType(attachment: AttachmentDTO): string {
-    const explicitType = typeof attachment.contentType === 'string'
-        ? attachment.contentType.trim().toLowerCase()
-        : typeof attachment.ContentType === 'string'
-            ? attachment.ContentType.trim().toLowerCase()
-            : '';
-
-    if (explicitType) {
-        return explicitType;
-    }
-
-    const source = (
-        attachment.fileName ??
-        attachment.FileName ??
-        attachment.name ??
-        attachment.Name ??
-        attachment.url ??
-        attachment.Url ??
-        attachment.imageUrl ??
-        attachment.ImageUrl ??
-        attachment.sasUrl ??
-        attachment.SasUrl ??
-        ''
-    ).toLowerCase().split('?')[0]!.split('#')[0]!;
-
-    for (const [extension, contentType] of Object.entries(FILE_EXTENSION_CONTENT_TYPES)) {
-        if (source.endsWith(extension)) return contentType;
-    }
-
-    return '';
-}
-
-/**
  * Extracts the lowercase file extension (including the dot) from a filename.
  */
 export function getFileExtension(fileName: string): string {
@@ -198,7 +161,7 @@ export function isAllowedAttachmentFile(file: File | null | undefined): boolean 
  * Determines the display kind of an attachment (image, pdf, or generic file).
  */
 export function getAttachmentKind(attachment: AttachmentDTO): AttachmentKind {
-    const contentType = inferAttachmentContentType(attachment);
+    const contentType = attachment.contentType ?? '';
 
     if (IMAGE_CONTENT_TYPES.has(contentType)) return FILE_KIND_IMAGE;
     if (contentType === 'application/pdf') return FILE_KIND_PDF;
@@ -212,10 +175,7 @@ export function getAttachmentKind(attachment: AttachmentDTO): AttachmentKind {
  */
 export function createPendingAttachment(file: File): PendingAttachment {
     const fileName = file.name || 'Archivo';
-    const contentType = inferAttachmentContentType({
-        contentType: file.type,
-        fileName
-    });
+    const contentType = file.type;
 
     return {
         id: `${Date.now()}${Math.random().toString(36).slice(2)}`,

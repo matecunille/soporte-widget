@@ -14,7 +14,7 @@ import type {
     HistoryDTO,
     ApiSendResponse 
 } from './types.js';
-import { inferAttachmentContentType, getAttachmentKind } from './attachments.js';
+import { getAttachmentKind } from './attachments.js';
 import { compareUtcDates } from './utils.js';
 
 /**
@@ -26,20 +26,17 @@ export function normalizeAttachment(
     resolveUrl: (url: string | undefined) => string | undefined
 ): Attachment {
     // Backend usa sasUrl para URLs firmadas, o url para URLs públicas
-    const rawUrl = attachment.sasUrl ?? attachment.SasUrl ?? attachment.url ?? attachment.Url;
+    const rawUrl = attachment.sasUrl;
     const url = resolveUrl(rawUrl) ?? '';
-    const contentType = attachment.contentType ?? attachment.ContentType ?? '';
-    const fileName = attachment.fileName ?? attachment.FileName ?? attachment.name ?? attachment.Name ?? 'Archivo';
-
-    // Infer content type from fileName/URL if not explicitly provided
-    const finalContentType = contentType || inferAttachmentContentType(attachment);
-
+    const contentType = attachment.contentType ?? '';
+    const fileName = attachment.fileName ?? 'Archivo';
+    
     return {
         url,
         imageUrl: undefined,
         fileName,
-        contentType: finalContentType,
-        kind: getAttachmentKind({ contentType: finalContentType, fileName, url })
+        contentType: contentType,
+        kind: getAttachmentKind({ contentType: contentType, fileName, sasUrl: url })
     };
 }
 

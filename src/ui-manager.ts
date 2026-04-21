@@ -1007,7 +1007,7 @@ export class UI {
             isFromLead: true,
             attachments: pending.map((a) => ({
                 ...normalizeAttachment({
-                    url: a.localUrl,
+                    sasUrl: a.localUrl,
                     fileName: a.fileName,
                     contentType: a.file.type
                 }, (url) => url),
