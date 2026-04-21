@@ -9,6 +9,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "sourceMap": true,
+    "inlineSources": true,
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

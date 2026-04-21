@@ -2,7 +2,7 @@
   "name": "soporte-widget",
   "version": "2.0.0",
   "description": "Widget de chat embebible con SignalR",
-  "main": "dist/soporte-widget.min.js",
+  "main": "dist/soporte-widget.js",
   "type": "module",
   "scripts": {
     "test": "jest",

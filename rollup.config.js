@@ -4,9 +4,10 @@ import terser from '@rollup/plugin-terser';
 export default {
   input: 'src/index.ts',
   output: {
-    file: 'soporte-widget.min.js',
+    file: 'soporte-widget.js',
     format: 'iife',
     name: 'SoporteWidget',
+    sourcemap: 'inline',
     globals: {
       'signalr': 'signalR'
     }
@@ -16,9 +17,12 @@ export default {
     typescript({
       tsconfig: './tsconfig.json',
       declaration: false,
-      declarationMap: false
+      declarationMap: false,
+      sourceMap: true,
+      inlineSources: true
     }),
     terser({
+      sourceMap: true,
       compress: {
         drop_console: false,
         drop_debugger: true,
