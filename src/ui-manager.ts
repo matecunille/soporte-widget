@@ -64,8 +64,6 @@ export class UI {
 
     // Circuit Breaker for connection management
     private readonly circuitBreaker: CircuitBreaker;
-    private signalrReconnectAttempt = 0;
-
     // Pending send deduplication
     private readonly tracker = new PendingTracker();
 
@@ -736,9 +734,9 @@ export class UI {
                 this.status = status;
                 this.updateStatus();
             },
-            (retryCount) => {
+            () => {
                 // SignalR is attempting automatic reconnect
-                this.signalrReconnectAttempt = retryCount;
+                // Note: We use Circuit Breaker's failure count for UI, not SignalR's retry count
                 this.updateConnectionErrorUI();
             }
         );
@@ -763,12 +761,12 @@ export class UI {
             await this.signalr.start(this.conversationId);
             // Success! Reset circuit breaker
             this.circuitBreaker.recordSuccess();
-            this.signalrReconnectAttempt = 0;
         } catch (err) {
             console.error('SignalR connection error', err);
             this.circuitBreaker.recordFailure();
             this.connected = false;
             this.signalr = null;
+            this.status = 'disconnected';
             this.updateStatus();
             this.updateConnectionErrorUI();
             
@@ -856,7 +854,6 @@ export class UI {
 
         if (this.status === 'connected') {
             this.elStatus.className = 'sw-status hidden';
-            this.signalrReconnectAttempt = 0;
             this.removeErrorMessages();
         } else if (this.status === 'connecting') {
             this.elStatus.className = 'sw-status connecting';
@@ -909,8 +906,9 @@ export class UI {
             errorDiv.innerHTML = '🔄 Intentando reconectar...';
         } else {
             // Circuit closed - automatic retry in progress
-            // Show SignalR's automatic reconnect attempt count
-            const attempt = Math.min(this.signalrReconnectAttempt, maxFailures);
+            // Use Circuit Breaker's failure count (tracks all attempts) instead of SignalR's reconnect count
+            // SignalR's reconnectAttempt only tracks automatic reconnections after a successful connection
+            const attempt = Math.min(failureCount, maxFailures);
             errorDiv.innerHTML = `⚠️ Problemas de conexión. Reintentando (${attempt}/${maxFailures})...`;
         }
     }
@@ -943,7 +941,6 @@ export class UI {
         
         // Reset circuit breaker to HALF_OPEN (allows one attempt)
         if (this.circuitBreaker.attemptReset()) {
-            this.signalrReconnectAttempt = 0;
             this.connected = false;
 
             if (this.signalr) {
