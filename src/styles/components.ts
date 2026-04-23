@@ -840,10 +840,12 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     width: 18px;
     height: 18px;
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Compensate for paper-plane visual weight shift (top-right heavy) */
+    transform: translate(-1px, 1px);
 }
 
 .sw-send-btn:hover:not(:disabled) svg {
-    transform: translateX(2px) translateY(-1px);
+    transform: translate(1px, 0);
 }
 
 .sw-file-input {

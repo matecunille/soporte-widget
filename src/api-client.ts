@@ -14,10 +14,12 @@ interface RequestOptions extends RequestInit {
 export class ApiClient {
     private readonly base: string;
     private readonly clientId: string;
+    private readonly senderCompany: string;
 
     constructor(config: WidgetConfig) {
         this.base = config.apiUrl.replace(/\/+$/, '');
         this.clientId = config.clientId;
+        this.senderCompany = config.senderCompany;
     }
 
     /** @internal Used for URL resolution */
@@ -30,7 +32,8 @@ export class ApiClient {
         const headers: Record<string, string> = {
             ...options.headers,
             'Authorization': `Bearer ${token}`,
-            'X-Widget-ClientId': this.clientId
+            'X-Widget-ClientId': this.clientId,
+            'X-Widget-SenderCompany': this.senderCompany
         };
         return fetch(url, { ...options, headers });
     }
@@ -69,6 +72,7 @@ export class ApiClient {
         const historyUrl = new URL(`${this.base}/api/widget/conversations/history`);
         if (senderIdentifier) {
             historyUrl.searchParams.set('senderIdentifier', senderIdentifier);
+            historyUrl.searchParams.set('senderCompany', this.senderCompany);
         }
 
         return this.request(historyUrl.toString())
