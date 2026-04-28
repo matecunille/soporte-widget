@@ -58,6 +58,7 @@ export interface PendingAttachment extends Attachment {
 // Backend DTO with camelCase or PascalCase variants
 export interface AttachmentDTO {
     sasUrl?: string;
+    url?: string;
     fileName?: string;
     contentType?: string;
     localUrl?: string;

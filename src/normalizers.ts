@@ -14,8 +14,19 @@ import type {
     HistoryDTO,
     ApiSendResponse 
 } from './types.js';
-import { getAttachmentKind } from './attachments.js';
+import { getAttachmentKind, FILE_EXTENSION_CONTENT_TYPES } from './attachments.js';
 import { compareUtcDates } from './utils.js';
+
+/**
+ * Internal helper to look up a MIME type from a filename extension.
+ */
+function inferContentType(fileName: string | undefined, fallback: string): string {
+    if (!fileName) return fallback;
+    const dot = fileName.lastIndexOf('.');
+    if (dot === -1 || dot === fileName.length - 1) return fallback;
+    const ext = fileName.slice(dot).toLowerCase();
+    return FILE_EXTENSION_CONTENT_TYPES[ext] ?? fallback;
+}
 
 /**
  * Normalizes a backend attachment DTO.
@@ -26,9 +37,13 @@ export function normalizeAttachment(
     resolveUrl: (url: string | undefined) => string | undefined
 ): Attachment {
     // Backend usa sasUrl para URLs firmadas, o url para URLs públicas
-    const rawUrl = attachment.sasUrl;
+    const rawUrl = attachment.sasUrl ?? attachment.url;
     const url = resolveUrl(rawUrl) ?? '';
-    const contentType = attachment.contentType ?? '';
+    
+    // Infer content type from explicit contentType, then filename, then URL path
+    const contentType = attachment.contentType
+        || inferContentType(attachment.fileName, '')
+        || inferContentType(rawUrl, '');
     const fileName = attachment.fileName ?? 'Archivo';
     
     return {

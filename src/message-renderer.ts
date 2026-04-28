@@ -128,7 +128,9 @@ export class MessageRenderer {
         }
         
         if (msg.content) {
-            html += `<div class="sw-msg-text">${escapeHtml(msg.content)}</div>`;
+            // Newlines arrive as literal \n from backend; HTML collapses whitespace.
+            // Escape first (XSS prevention), then convert \n → <br> for visual line breaks.
+            html += `<div class="sw-msg-text">${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>`;
         }
         
         if (msg.failed) {

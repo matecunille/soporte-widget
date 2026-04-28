@@ -340,8 +340,9 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 }
 
 .sw-msg-file-pdf .sw-msg-file-icon {
-    background: #e53935;
-    box-shadow: 0 2px 6px rgba(229,57,53,0.35);
+    background: var(--sw-primary);
+    color: white;
+    box-shadow: 0 2px 6px rgba(var(--sw-primary-rgb), 0.35);
 }
 
 /* Archivos en mensajes salientes - mejor contraste */
@@ -369,7 +370,7 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 }
 
 .sw-msg-out .sw-msg-file-pdf .sw-msg-file-icon {
-    color: #d92d20;
+    color: var(--sw-primary);
 }
 
 .sw-msg-file-meta {
@@ -593,22 +594,22 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
 
 /* PDF Specific Styling */
 .sw-preview-file-pdf .sw-preview-file-icon {
-    background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
-    border-color: rgba(230,57,70,0.2);
+    background: linear-gradient(135deg, rgba(var(--sw-primary-rgb), 0.06) 0%, rgba(var(--sw-primary-rgb), 0.12) 100%);
+    border-color: rgba(var(--sw-primary-rgb), 0.2);
 }
 
 .sw-preview-file-pdf .sw-preview-file-icon::before {
-    background: linear-gradient(90deg, #e63946 0%, #ff6b6b 100%);
+    background: linear-gradient(90deg, var(--sw-primary) 0%, rgba(var(--sw-primary-rgb), 0.7) 100%);
 }
 
 .sw-preview-file-pdf:hover .sw-preview-file-icon {
-    border-color: rgba(230,57,70,0.4);
-    box-shadow: 0 4px 12px rgba(230,57,70,0.15);
+    border-color: rgba(var(--sw-primary-rgb), 0.4);
+    box-shadow: 0 4px 12px rgba(var(--sw-primary-rgb), 0.15);
 }
 
 .sw-preview-file-pdf .sw-preview-file-icon svg,
 .sw-preview-file-pdf .sw-preview-file-icon {
-    color: #e63946;
+    color: var(--sw-primary);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 11px;
     font-weight: 700;
