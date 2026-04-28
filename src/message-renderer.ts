@@ -7,8 +7,8 @@
 
 import { escapeHtml, formatTime } from './utils.js';
 import type { WidgetConfig, Message, Attachment } from './types.js';
-import { FILE_KIND_IMAGE, FILE_KIND_PDF, getFileExtension } from './attachments.js';
-import { downloadIconSvg, fileIconSvg } from './styles/icons.js';
+import { FILE_KIND_IMAGE, getDisplayName, getFileExtension } from './attachments.js';
+import { downloadIconSvg } from './styles/icons.js';
 
 interface RenderOptions {
     welcomeScreen: boolean;
@@ -129,8 +129,11 @@ export class MessageRenderer {
         
         if (msg.content) {
             // Newlines arrive as literal \n from backend; HTML collapses whitespace.
-            // Escape first (XSS prevention), then convert \n → <br> for visual line breaks.
-            html += `<div class="sw-msg-text">${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>`;
+            // Escape first (XSS prevention), then parse **bold**, then convert \n → <br>.
+            let text = escapeHtml(msg.content);
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\n/g, '<br>');
+            html += `<div class="sw-msg-text">${text}</div>`;
         }
         
         if (msg.failed) {
@@ -150,55 +153,32 @@ export class MessageRenderer {
         }
 
         const fileName = attachment.fileName || 'Archivo';
-        const fileLabel = attachment.kind === FILE_KIND_PDF ? 'Descargar PDF' : 'Descargar archivo';
-        const fileIcon = attachment.kind === FILE_KIND_PDF ? 'PDF' : fileIconSvg;
-        const fileBadge = this.getAttachmentBadge(attachment);
-        const fileDescriptor = this.getAttachmentDescriptor(attachment);
+        const displayName = getDisplayName(fileName);
+        const badge = this.getAttachmentBadge(attachment);
+        const extClass = this.getExtensionClass(attachment);
 
         return `
-            <a class="sw-msg-file sw-msg-file-${attachment.kind}" 
-               href="${escapeHtml(attachmentUrl)}" 
-               download="${escapeHtml(fileName)}" 
-               data-url="${escapeHtml(attachmentUrl)}" 
+            <a class="sw-msg-file sw-msg-file-${attachment.kind}${extClass}"
+               href="${escapeHtml(attachmentUrl)}"
+               download="${escapeHtml(fileName)}"
+               data-url="${escapeHtml(attachmentUrl)}"
                data-file-name="${escapeHtml(fileName)}"
-               aria-label="${escapeHtml(`${fileLabel}: ${fileName}`)}">
-                <span class="sw-msg-file-icon">${fileIcon}</span>
-                <div class="sw-msg-file-meta">
-                    <div class="sw-msg-file-topline">
-                        <span class="sw-msg-file-badge">${escapeHtml(fileBadge)}</span>
-                        <span class="sw-msg-file-caption">${escapeHtml(fileDescriptor)}</span>
-                    </div>
-                    <div class="sw-msg-file-name" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</div>
-                    <div class="sw-msg-file-footer">
-                        <span class="sw-msg-file-action">${fileLabel}</span>
-                        <span class="sw-msg-file-cta" aria-hidden="true">${downloadIconSvg}</span>
-                    </div>
-                </div>
+               aria-label="${escapeHtml(`Descargar: ${fileName}`)}">
+                <span class="sw-msg-file-badge">${escapeHtml(badge)}</span>
+                <span class="sw-msg-file-name">${escapeHtml(displayName)}</span>
+                <span class="sw-msg-file-download" aria-hidden="true">${downloadIconSvg}</span>
             </a>
         `;
     }
 
     private getAttachmentBadge(attachment: Attachment): string {
-        if (attachment.kind === FILE_KIND_PDF) return 'PDF';
-
         const extension = getFileExtension(attachment.fileName || attachment.url || '');
         return extension ? extension.slice(1).toUpperCase() : 'FILE';
     }
 
-    private getAttachmentDescriptor(attachment: Attachment): string {
-        if (attachment.kind === FILE_KIND_PDF) return 'Documento PDF';
-
-        switch (getFileExtension(attachment.fileName || attachment.url || '')) {
-            case '.xls':
-            case '.xlsx':
-                return 'Hoja de calculo';
-            case '.docx':
-                return 'Documento Word';
-            case '.txt':
-                return 'Archivo de texto';
-            default:
-                return 'Archivo adjunto';
-        }
+    private getExtensionClass(attachment: Attachment): string {
+        const extension = getFileExtension(attachment.fileName || attachment.url || '');
+        return extension ? ` sw-msg-file-ext-${extension.slice(1)}` : '';
     }
 }
 

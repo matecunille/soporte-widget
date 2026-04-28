@@ -57,36 +57,19 @@ export function generateMobileStyles(config: WidgetConfig): string {
     }
 
     .sw-msg-file {
-        gap: 10px;
-        padding: 10px;
+        gap: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
     }
 
-    .sw-msg-file-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
+    .sw-msg-file-download {
+        width: 16px;
+        height: 16px;
     }
 
     .sw-msg-file-badge {
         font-size: 9px;
-        padding: 3px 7px;
-    }
-
-    .sw-msg-file-caption {
-        font-size: 10px;
-    }
-
-    .sw-msg-file-name {
-        font-size: 13px;
-    }
-
-    .sw-msg-file-action {
-        font-size: 11px;
-    }
-
-    .sw-msg-file-cta {
-        width: 28px;
-        height: 28px;
+        padding: 2px 6px;
     }
 
     .sw-footer {

@@ -280,206 +280,124 @@ export function generateComponentStyles(_config: WidgetConfig, _primaryRgb: stri
     transform: scale(1.02);
 }
 
-/* Message files */
+/* Message file attachments — clean row with type pill */
 .sw-msg-file {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(247,247,247,0.92) 100%);
-    border-radius: 16px;
-    border: 1px solid rgba(15,23,42,0.08);
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
     text-decoration: none;
     color: inherit;
-    margin-bottom: 6px;
-    overflow: hidden;
-    box-shadow: 0 10px 24px rgba(15,23,42,0.08);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sw-msg-file::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: linear-gradient(180deg, rgba(var(--sw-primary-rgb), 0.95) 0%, rgba(var(--sw-primary-rgb), 0.45) 100%);
+    font-size: 13px;
+    max-width: 100%;
+    margin-bottom: 4px;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .sw-msg-file:hover {
-    transform: translateY(-2px);
-    border-color: rgba(var(--sw-primary-rgb), 0.2);
-    box-shadow: 0 14px 28px rgba(15,23,42,0.12);
-}
-
-.sw-msg-file-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    margin-left: 4px;
-    background: linear-gradient(180deg, #ffffff 0%, #eef2f6 100%);
-    color: #475569;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    border: 1px solid rgba(148,163,184,0.18);
-    box-shadow: 0 8px 16px rgba(15,23,42,0.08);
-}
-
-.sw-msg-file-icon svg {
-    width: 22px;
-    height: 22px;
-}
-
-.sw-msg-file-pdf .sw-msg-file-icon {
-    background: var(--sw-primary);
-    color: white;
-    box-shadow: 0 2px 6px rgba(var(--sw-primary-rgb), 0.35);
-}
-
-/* Archivos en mensajes salientes - mejor contraste */
-.sw-msg-out .sw-msg-file {
-    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.12) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 24px rgba(0,0,0,0.12);
-}
-
-.sw-msg-out .sw-msg-file::before {
-    background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.4) 100%);
-}
-
-.sw-msg-out .sw-msg-file:hover {
-    background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.16) 100%);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 14px 28px rgba(0,0,0,0.16);
-}
-
-.sw-msg-out .sw-msg-file-icon {
-    background: rgba(255, 255, 255, 0.95);
-    color: var(--sw-primary);
-    border-color: rgba(255,255,255,0.08);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.14);
-}
-
-.sw-msg-out .sw-msg-file-pdf .sw-msg-file-icon {
-    color: var(--sw-primary);
-}
-
-.sw-msg-file-meta {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sw-msg-file-topline {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 .sw-msg-file-badge {
     display: inline-flex;
     align-items: center;
-    padding: 4px 8px;
+    padding: 3px 8px;
     border-radius: 999px;
     background: rgba(var(--sw-primary-rgb), 0.12);
-    color: #b45309;
+    color: var(--sw-primary);
     font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
+    flex-shrink: 0;
 }
 
 .sw-msg-file-pdf .sw-msg-file-badge {
-    background: rgba(217,45,32,0.12);
-    color: #b42318;
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
 }
 
-.sw-msg-out .sw-msg-file-badge {
-    background: rgba(255,255,255,0.18);
-    color: rgba(255,255,255,0.95);
+.sw-msg-file-ext-xlsx .sw-msg-file-badge,
+.sw-msg-file-ext-xls .sw-msg-file-badge {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
 }
 
-.sw-msg-file-caption {
-    font-size: 11px;
-    color: rgba(15,23,42,0.56);
-    font-weight: 600;
+.sw-msg-file-ext-docx .sw-msg-file-badge {
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
 }
 
 .sw-msg-file-name {
-    font-weight: 700;
-    font-size: 14px;
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: break-word;
-    color: #0f172a;
-}
-
-.sw-msg-file-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.sw-msg-file-action {
-    font-size: 12px;
-    color: rgba(15,23,42,0.62);
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
 }
 
-.sw-msg-file-cta {
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
-    background: rgba(15,23,42,0.06);
-    color: rgba(15,23,42,0.68);
+.sw-msg-file-download {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    color: rgba(0, 0, 0, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.sw-msg-file-cta svg {
-    width: 16px;
-    height: 16px;
+.sw-msg-file-download svg {
+    width: 100%;
+    height: 100%;
 }
 
-.sw-msg-file:hover .sw-msg-file-cta {
+.sw-msg-file:hover .sw-msg-file-download {
     transform: translateX(2px);
+    color: rgba(0, 0, 0, 0.7);
 }
 
-.sw-msg-out .sw-msg-file-caption {
-    color: rgba(255,255,255,0.72);
+/* Outgoing message variant — light card on colored bubble */
+.sw-msg-out .sw-msg-file {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 0.95);
+    color: #1f2937;
 }
 
-.sw-msg-out .sw-msg-file-name {
-    color: #ffffff;
+.sw-msg-out .sw-msg-file:hover {
+    background: #ffffff;
+    border-color: #ffffff;
 }
 
-.sw-msg-out .sw-msg-file-action {
-    color: rgba(255,255,255,0.82);
+.sw-msg-out .sw-msg-file-download {
+    color: rgba(0, 0, 0, 0.4);
 }
 
-.sw-msg-out .sw-msg-file-cta {
-    background: rgba(255,255,255,0.14);
-    color: #ffffff;
+.sw-msg-out .sw-msg-file:hover .sw-msg-file-download {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+/* Outgoing badge colors (same as incoming, visible on white card) */
+.sw-msg-out .sw-msg-file-pdf .sw-msg-file-badge {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+}
+
+.sw-msg-out .sw-msg-file-ext-xlsx .sw-msg-file-badge,
+.sw-msg-out .sw-msg-file-ext-xls .sw-msg-file-badge {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+}
+
+.sw-msg-out .sw-msg-file-ext-docx .sw-msg-file-badge {
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
 }
 
 /* ============================================

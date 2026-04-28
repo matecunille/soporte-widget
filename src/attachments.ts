@@ -134,6 +134,19 @@ export function extractPastedFiles(clipboardData: DataTransfer | null): File[] {
 }
 
 /**
+ * Returns the filename without its extension (for display purposes).
+ * e.g., "documento.pdf" → "documento", "archivo" → "archivo"
+ */
+export function getDisplayName(fileName: string): string {
+    const normalizedName = String(fileName ?? '').trim();
+    const dotIndex = normalizedName.lastIndexOf('.');
+
+    if (dotIndex <= 0) return normalizedName || 'Archivo';
+
+    return normalizedName.slice(0, dotIndex) || normalizedName;
+}
+
+/**
  * Extracts the lowercase file extension (including the dot) from a filename.
  */
 export function getFileExtension(fileName: string): string {

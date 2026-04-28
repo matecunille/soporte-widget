@@ -5,7 +5,7 @@ import type { Message } from '../src/types';
 describe('MessageRenderer attachments', () => {
     const renderer = new MessageRenderer(defaultConfig);
 
-    it('renders spreadsheet attachments with a file badge and descriptor', () => {
+    it('renders spreadsheet attachments with type badge and download icon', () => {
         const message: Message = {
             content: 'test',
             sentAt: '2024-01-01T10:00:00Z',
@@ -20,13 +20,15 @@ describe('MessageRenderer attachments', () => {
 
         const html = renderer.renderSingleMessage(message, true, true, false);
 
-        expect(html).toContain('sw-msg-file-badge">XLSX<');
-        expect(html).toContain('Hoja de calculo');
-        expect(html).toContain('sw-msg-file-cta');
-        expect(html).toContain('Asiento-202508.xlsx');
+        expect(html).toContain('sw-msg-file');
+        expect(html).toContain('sw-msg-file-badge');
+        expect(html).toContain('sw-msg-file-download');
+        expect(html).toContain('Asiento-202508.xlsx');        // original filename in data attr
+        expect(html).toContain('Asiento-202508</span>');      // display name without extension
+        expect(html).not.toContain('sw-msg-file-icon');        // removed
     });
 
-    it('renders pdf attachments with a PDF descriptor', () => {
+    it('renders pdf attachments with PDF badge and download icon', () => {
         const message: Message = {
             content: '',
             sentAt: '2024-01-01T10:00:00Z',
@@ -41,8 +43,22 @@ describe('MessageRenderer attachments', () => {
 
         const html = renderer.renderSingleMessage(message, true, true, false);
 
-        expect(html).toContain('sw-msg-file-badge">PDF<');
-        expect(html).toContain('Documento PDF');
-        expect(html).toContain('Descargar PDF');
+        expect(html).toContain('sw-msg-file');
+        expect(html).toContain('sw-msg-file-badge');
+        expect(html).toContain('recibo</span>');               // display name without extension
+        expect(html).toContain('sw-msg-file-download');
+        expect(html).not.toContain('sw-msg-file-icon');
+    });
+
+    it('renders **bold** text as <strong>', () => {
+        const message: Message = {
+            content: 'Hello **world** test',
+            sentAt: '2024-01-01T10:00:00Z',
+            isFromLead: true,
+            attachments: []
+        };
+        const html = renderer.renderSingleMessage(message, true, true, false);
+        expect(html).toContain('<strong>world</strong>');
+        expect(html).not.toContain('**world**');
     });
 });
